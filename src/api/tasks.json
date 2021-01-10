@@ -3,18 +3,21 @@
     "id": "1",
     "title": "My first task",
     "description": "Description for my first task",
+    "priority": "low",
     "date": "today"
   },
   "2": {
     "id": "2",
     "title": "My second task",
     "description": "Description for my second task",
+    "priority": "high",
     "date": "yesterday"
   },
   "3": {
     "id": "3",
     "title": "My third task",
     "description": "Description for my third task",
+    "priority": "low",
     "date": "tomorrow"
   }
 }

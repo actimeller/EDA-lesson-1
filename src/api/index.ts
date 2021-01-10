@@ -1,11 +1,23 @@
 import usersResponse from './users.json';
 import tasksResponse from './tasks.json';
 
-interface Task {
+export interface ITask {
   id: string,
   title: string,
   description: string,
   date: string,
+  priority: 'low' | 'high',
+}
+
+export interface ITaskFilter {
+  title: ITask['title'],
+  date: ITask['date']
+  priority: ITask['priority'] | undefined,
+}
+
+export interface IAuthorizationResponse {
+  type: string;
+  message: string
 }
 
 interface Credentials {
@@ -22,8 +34,8 @@ interface User extends Credentials {
 
 const DELAY = 500;
 
-let users: { [key: string]: User } = usersResponse;
-const tasks: { [key: string]: Task } = tasksResponse;
+let users = usersResponse as { [key: string]: User };
+const tasks = tasksResponse as { [key: string]: ITask };
 
 const checkCredentials = ({ login, password }: Credentials): boolean => {
   const user = users[login];
@@ -31,7 +43,9 @@ const checkCredentials = ({ login, password }: Credentials): boolean => {
   return false;
 };
 
-const generateSessionId = (login: string): string => `${login}:${Math.random().toString(36).substr(2, 12)}`;
+const generateSessionId = (
+  login: string,
+): string => `${login}:${Math.random().toString(36).substr(2, 12)}`;
 
 export const authorization = (credentials: Credentials) => new Promise((resolve, reject) => {
   const { login } = credentials;
@@ -48,7 +62,9 @@ export const authorization = (credentials: Credentials) => new Promise((resolve,
   }, DELAY);
 });
 
-export const registration = ({ login }: Credentials) => new Promise((resolve, reject) => {
+export const registration = (
+  { login }: Credentials,
+) => new Promise((resolve, reject) => {
   setTimeout(() => {
     if (!users[login]) {
       // todo: save this user in db
@@ -63,7 +79,10 @@ export const registration = ({ login }: Credentials) => new Promise((resolve, re
   }, DELAY);
 });
 
-export const restore = ({ login, keyword }: {login: User['login'], keyword: User['keyword']}) => new Promise((resolve, reject) => {
+export const restore = (
+  { login, keyword }:
+  { login: User['login'], keyword: User['keyword'] },
+) => new Promise((resolve, reject) => {
   setTimeout(() => {
     if (users[login].keyword === keyword) {
       // todo: send restored password to email
@@ -83,7 +102,10 @@ export const getUser = (sessionId: string): User | undefined => {
   return users[login];
 };
 
-export const editUser = (sessionId: string, newUserData: User) => new Promise((resolve, reject) => {
+export const editUser = (
+  sessionId: string,
+  newUserData: User,
+) => new Promise((resolve, reject) => {
   const user = getUser(sessionId);
   setTimeout(() => {
     // todo: save newData to db
@@ -102,13 +124,21 @@ export const editUser = (sessionId: string, newUserData: User) => new Promise((r
   }, DELAY);
 });
 
-export const getTasks = (sessionId: string) => new Promise((resolve, reject) => {
+export const getFilteredTasks = (
+  sessionId: string,
+  filter: ITaskFilter,
+) => new Promise((resolve, reject) => {
   const user = getUser(sessionId);
   setTimeout(() => {
     if (user) {
+      const filteredTasks = user.tasks.map((taskId:string) => tasks[taskId])
+        .filter(Boolean)
+        .filter((task) => task.title.search(filter.title) > -1)
+        .filter((task) => (filter.priority ? task.priority === filter.priority : true))
+        .filter((task) => (filter.date !== '' ? task.date === filter.date : true));
       resolve({
         type: 'success',
-        message: user.tasks.map((taskId:string) => tasks[taskId]).filter(Boolean),
+        message: filteredTasks,
       });
     } else {
       reject(new Error('Error while getting tasks. Try again later'));
