@@ -11,7 +11,7 @@ import Login from './components/Login';
 import Registration from './components/Registration';
 import Restore from './components/Restore';
 import NotFound from './components/NotFound';
-import Home from './components/Home';
+import TaskList from './components/TaskList';
 import Profile from './components/Profile';
 import Wrapper from './components/Wrapper';
 
@@ -49,7 +49,7 @@ export default () => {
           <Route
             path="/"
             exact
-            component={Home}
+            component={TaskList}
           />
           <Route
             path="/profile"

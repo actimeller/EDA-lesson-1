@@ -14,7 +14,7 @@ type CustomInputProps = {
 
 type EditResponse = {
   type: string;
-   message: string
+  message: string
 }
 
 const layout = {
