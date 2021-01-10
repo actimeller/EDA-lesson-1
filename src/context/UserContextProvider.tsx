@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import UserContext from './UserContext';
 
-export const UserContextProvider: React.FC = ({ children }) => {
+export default ({ children }: {children: ReactNode}) => {
   const [sessionId, setSessionId] = useState(sessionStorage.getItem('sessionId'));
 
   useEffect(() => {
@@ -25,5 +25,3 @@ export const UserContextProvider: React.FC = ({ children }) => {
     </UserContext.Provider>
   );
 };
-
-export default UserContextProvider;

@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import {
-  Route, Switch, Redirect, RouteProps,
+  Redirect,
+  Route, Switch,
 } from 'react-router-dom';
 import { Layout } from 'antd';
 import './App.scss';
@@ -11,70 +12,53 @@ import Registration from './components/Registration';
 import Restore from './components/Restore';
 import NotFound from './components/NotFound';
 import Home from './components/Home';
+import Profile from './components/Profile';
+import Wrapper from './components/Wrapper';
 
-interface PrivateRouteProps extends RouteProps {
-  allowed?: boolean,
-  redirectTo?: string
-}
-
-const App: React.FC = () => {
+export default () => {
   const { sessionId } = useContext(UserContext);
 
-  const defaultRouteProps = {
-    allowed: sessionId != null,
-    redirectTo: '/login',
-  };
-
-  const authRouteProps = {
-    allowed: sessionId == null,
-    redirectTo: '/',
-  };
-
-  const PrivateRoute = ({
-    component: Component,
-    allowed = sessionId != null,
-    redirectTo = '/login',
-    ...rest
-  }: PrivateRouteProps) => {
-    if (!Component) return null;
+  if (sessionId == null) {
     return (
-      <Route
-        {...rest}
-        render={(props) => (allowed
-          ? <Component {...props} /> : <Redirect to={redirectTo} />)}
-      />
+      <Layout>
+        <div className="LoginPage">
+          <Switch>
+            <Route
+              path="/login"
+              component={Login}
+            />
+            <Route
+              path="/registration"
+              component={Registration}
+            />
+            <Route
+              path="/restore"
+              component={Restore}
+            />
+            <Redirect to="/login" />
+          </Switch>
+        </div>
+      </Layout>
     );
-  };
+  }
 
   return (
     <Layout>
-      <Switch>
-        <PrivateRoute
-          {...authRouteProps}
-          path="/login"
-          component={Login}
-        />
-        <PrivateRoute
-          {...authRouteProps}
-          path="/registration"
-          component={Registration}
-        />
-        <PrivateRoute
-          {...authRouteProps}
-          path="/restore"
-          component={Restore}
-        />
-
-        <PrivateRoute
-          {...defaultRouteProps}
-          path="/"
-          exact
-          component={Home}
-        />
-        <Route component={NotFound} />
-      </Switch>
+      <Wrapper>
+        <Switch>
+          <Route
+            path="/"
+            exact
+            component={Home}
+          />
+          <Route
+            path="/profile"
+            exact
+            component={Profile}
+          />
+          <Route component={NotFound} />
+        </Switch>
+      </Wrapper>
     </Layout>
   );
 };
-
-export default App;

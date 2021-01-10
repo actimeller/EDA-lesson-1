@@ -41,7 +41,6 @@
     "react/prop-types": "off",
     "react/require-default-props": 0,
     "react/jsx-props-no-spreading": "off",
-    "react/react-in-jsx-scope": "off",
-    "import/no-named-as-default": 0
+    "react/react-in-jsx-scope": "off"
   }
 }

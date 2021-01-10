@@ -4,14 +4,16 @@ const DELAY = 1000;
 
 interface Credentials {
     login: string,
-    password?: string,
+    password: string,
 }
 
 interface User extends Credentials {
-    keyword?: string;
+    keyword: string;
+    name: string;
+    photo: string;
 }
 
-const users: { [key: string]: User } = usersResponse;
+let users: { [key: string]: User } = usersResponse;
 
 const checkCredentials = ({ login, password }: Credentials): boolean => {
   const user = users[login];
@@ -19,12 +21,13 @@ const checkCredentials = ({ login, password }: Credentials): boolean => {
   return false;
 };
 
-const generateSessionId = (): string => Math.random().toString(36).substr(2, 12);
+const generateSessionId = (login: string): string => `${login}:${Math.random().toString(36).substr(2, 12)}`;
 
 export const authorization = (credentials: Credentials) => new Promise((resolve, reject) => {
+  const { login } = credentials;
   setTimeout(() => {
     if (checkCredentials(credentials)) {
-      const sessionId = generateSessionId();
+      const sessionId = generateSessionId(login);
       resolve({
         type: 'success',
         message: sessionId,
@@ -39,7 +42,7 @@ export const registration = ({ login }: Credentials) => new Promise((resolve, re
   setTimeout(() => {
     if (!users[login]) {
       // todo: save this user in db
-      const sessionId = generateSessionId();
+      const sessionId = generateSessionId(users.max.login);
       resolve({
         type: 'success',
         message: sessionId,
@@ -50,17 +53,41 @@ export const registration = ({ login }: Credentials) => new Promise((resolve, re
   }, DELAY);
 });
 
-export const restore = ({ login, keyword }: User) => new Promise((resolve, reject) => {
+export const restore = ({ login, keyword }: {login: User['login'], keyword: User['keyword']}) => new Promise((resolve, reject) => {
   setTimeout(() => {
     if (users[login].keyword === keyword) {
       // todo: send restored password to email
-      const sessionId = generateSessionId();
+      const sessionId = generateSessionId(login);
       resolve({
         type: 'success',
         message: sessionId,
       });
     } else {
       reject(new Error('Key passoword is incorrect'));
+    }
+  }, DELAY);
+});
+
+export const getUser = (sessionId: string): User | undefined => {
+  const [login] = sessionId.split(':');
+  return users[login];
+};
+
+export const editUser = (sessionId: string, newUserData: User) => new Promise((resolve, reject) => {
+  const user = getUser(sessionId);
+  setTimeout(() => {
+    // todo: save newData to db
+    if (user) {
+      users = {
+        ...users,
+        [user.login]: { ...newUserData },
+      };
+      resolve({
+        type: 'success',
+        message: 'ура',
+      });
+    } else {
+      reject(new Error('Can'));
     }
   }, DELAY);
 });

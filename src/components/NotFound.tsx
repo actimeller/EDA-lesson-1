@@ -3,7 +3,7 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 
-const NotFound = () => (
+export default () => (
   <Result
     status="404"
     title="404"
@@ -11,5 +11,3 @@ const NotFound = () => (
     extra={<Link to="/"><Button type="primary">Back Home</Button></Link>}
   />
 );
-
-export default NotFound;
