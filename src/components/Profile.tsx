@@ -3,6 +3,7 @@ import {
   Typography, Form, Input, Button, Result, Spin, message,
 } from 'antd';
 import { Link } from 'react-router-dom';
+import { valueType } from 'antd/lib/statistic/utils';
 import { getUser, editUser } from '../api';
 import UserContext from '../context/UserContext';
 
@@ -80,6 +81,7 @@ export default () => {
           onFinish={onFinish}
         >
           {Object.entries(user)
+            .filter(([key]) => key !== 'tasks')
             .map(([key, value]: [key:string, value: string]) => (
               <Form.Item
                 name={key}
