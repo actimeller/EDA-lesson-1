@@ -35,7 +35,7 @@ interface User extends Credentials {
 const DELAY = 500;
 
 let users = usersResponse as { [key: string]: User };
-const tasks = tasksResponse as { [key: string]: ITask };
+let tasks = tasksResponse as { [key: string]: ITask };
 
 const checkCredentials = ({ login, password }: Credentials): boolean => {
   const user = users[login];
@@ -124,15 +124,25 @@ export const editUser = (
   }, DELAY);
 });
 
+const getUsersTasks = (sessionId: string): ITask[] | false => {
+  const user = getUser(sessionId);
+  if (user) {
+    const usersTasks = (user as User).tasks
+      .map((taskId:string) => tasks[taskId])
+      .filter(Boolean);
+    return usersTasks;
+  }
+  return false;
+};
+
 export const getFilteredTasks = (
   sessionId: string,
   filter: ITaskFilter,
 ) => new Promise((resolve, reject) => {
-  const user = getUser(sessionId);
+  const usersTasks = getUsersTasks(sessionId);
   setTimeout(() => {
-    if (user) {
-      const filteredTasks = user.tasks.map((taskId:string) => tasks[taskId])
-        .filter(Boolean)
+    if (usersTasks) {
+      const filteredTasks = usersTasks
         .filter((task) => task.title.search(filter.title) > -1)
         .filter((task) => (filter.priority ? task.priority === filter.priority : true))
         .filter((task) => (filter.date !== '' ? task.date === filter.date : true));
@@ -142,6 +152,47 @@ export const getFilteredTasks = (
       });
     } else {
       reject(new Error('Error while getting tasks. Try again later'));
+    }
+  }, DELAY);
+});
+
+export const getTask = (
+  sessionId: string,
+  id: ITask['id'],
+) => new Promise((resolve, reject) => {
+  const usersTasks = getUsersTasks(sessionId);
+  setTimeout(() => {
+    if (usersTasks) {
+      const filteredTask = usersTasks
+        .find((task) => task.id === id);
+      resolve({
+        type: 'success',
+        message: filteredTask,
+      });
+    } else {
+      reject(new Error('Error while getting task. Try again later'));
+    }
+  }, DELAY);
+});
+
+export const editTask = (
+  sessionId: string,
+  data: ITask,
+) => new Promise((resolve, reject) => {
+  const usersTasks = getUsersTasks(sessionId);
+  setTimeout(() => {
+    if (usersTasks && usersTasks.find((task) => task.id === data.id)) {
+      // todo: save newData to db
+      tasks = {
+        ...tasks,
+        [data.id]: { ...data },
+      };
+      resolve({
+        type: 'success',
+        message: 'Task has been updated',
+      });
+    } else {
+      reject(new Error('Error while saving task. Try again later'));
     }
   }, DELAY);
 });

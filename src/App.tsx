@@ -14,6 +14,7 @@ import NotFound from './components/NotFound';
 import TaskList from './components/TaskList';
 import Profile from './components/Profile';
 import Wrapper from './components/Wrapper';
+import TaskEdit from './components/TaskEdit';
 
 export default () => {
   const { sessionId } = useContext(UserContext);
@@ -50,6 +51,10 @@ export default () => {
             path="/"
             exact
             component={TaskList}
+          />
+          <Route
+            path="/task-edit/:id"
+            component={TaskEdit}
           />
           <Route
             path="/profile"

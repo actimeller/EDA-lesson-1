@@ -107,7 +107,7 @@ export default () => {
                   <Card
                     title={task.title}
                     extra={
-                      <Link to={`edit/${task.id}`}><EditOutlined key="edit" /></Link>
+                      <Link to={`/task-edit/${task.id}`}><EditOutlined key="edit" /></Link>
                     }
                     style={task.priority === 'high' ? { border: '1px solid red' } : undefined}
                   >
@@ -115,7 +115,7 @@ export default () => {
                   </Card>
                 </Col>
               ))}
-              {tasks.length === 0 && (
+              {(tasks.length === 0 && !loading) && (
                 <Empty
                   style={{ width: '100%' }}
                   description="Nothing found"

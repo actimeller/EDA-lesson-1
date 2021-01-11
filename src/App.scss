@@ -60,6 +60,14 @@
   }
 }
 
+.TaskEdit {
+  max-width: 100%;
+  width: 520px;
+  .ant-form-item-label {
+    text-align: left;
+  }
+}
+
 .ant-layout-content {
   padding: 20px 50px;
 }
