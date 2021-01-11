@@ -4,6 +4,7 @@ import {
 } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 import { getFilteredTasks, ITask, ITaskFilter } from '../api';
 import UserContext from '../context/UserContext';
 
@@ -19,8 +20,6 @@ export default () => {
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [filter, setFilter] = useState<ITaskFilter>({
     title: '',
-    priority: undefined,
-    date: '',
   });
 
   const onTitleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => setFilter({
@@ -28,19 +27,21 @@ export default () => {
     title: event.target.value,
   });
 
-  const onPriorityFilterChange = (value: any) => setFilter({
+  const ontypeFilterChange = (value: ITask['type']) => setFilter({
     ...filter,
-    priority: value || null,
+    type: value || null,
   });
 
-  const onDateFilterChange = (value: string) => setFilter({
-    ...filter,
-    date: value,
-  });
+  const onDateFilterChange = (value: string) => {
+    setFilter({
+      ...filter,
+      plannedStartDate: value === 'today' ? +moment().startOf('day') : undefined,
+    });
+  };
 
   const onFilterReset = () => setFilter({
     ...filter,
-    priority: undefined,
+    type: undefined,
     title: '',
   });
 
@@ -82,22 +83,25 @@ export default () => {
               />
 
               <Select
-                value={filter.priority}
+                value={filter.type}
                 style={{ width: '100%', marginTop: '16px' }}
-                placeholder="Priority"
+                placeholder="type"
                 allowClear
-                onChange={onPriorityFilterChange}
+                onChange={ontypeFilterChange}
               >
-                <Select.Option value="low">Low</Select.Option>
-                <Select.Option value="high">High</Select.Option>
+                <Select.Option value="default">Default</Select.Option>
+                <Select.Option value="urgent">Urgent</Select.Option>
+                <Select.Option value="outdated">Outdated</Select.Option>
               </Select>
             </Card>
           </Col>
           <Col span={20}>
-
             <Row gutter={[16, 16]}>
               <Col span={22}>
-                <Tabs defaultActiveKey="" onChange={onDateFilterChange}>
+                <Tabs
+                  defaultActiveKey=""
+                  onChange={onDateFilterChange}
+                >
                   <TabPane tab="All tasks" key="" />
                   <TabPane tab="Tasks for today" key="today" />
                 </Tabs>
@@ -119,7 +123,7 @@ export default () => {
                     extra={
                       <Link to={`/task-edit/${task.id}`}><EditOutlined key="edit" /></Link>
                     }
-                    style={task.priority === 'high' ? { border: '1px solid red' } : undefined}
+                    style={task.type === 'urgent' ? { border: '1px solid red' } : undefined}
                   >
                     {task.description}
                   </Card>

@@ -18,8 +18,11 @@ const initialTask: ITask = {
   id: '',
   title: '',
   description: '',
-  priority: 'low',
-  date: '',
+  type: 'default',
+  plannedStartDate: new Date().getTime(),
+  plannedEndDate: new Date().getTime(),
+  startDate: new Date().getTime(),
+  endDate: new Date().getTime(),
 };
 
 export default () => {

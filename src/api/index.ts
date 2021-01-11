@@ -5,14 +5,21 @@ export interface ITask {
   id: string,
   title: string,
   description: string,
-  date: string,
-  priority: 'low' | 'high',
+  type: 'default' | 'urgent' | 'outdated',
+  plannedStartDate: number,
+  plannedEndDate: number,
+  startDate: number,
+  endDate: number
 }
 
 export interface ITaskFilter {
   title: ITask['title'],
-  date: ITask['date']
-  priority: ITask['priority'] | undefined,
+  type?: ITask['type'] | undefined,
+  plannedStartDate?: ITask['plannedStartDate'],
+  plannedEndDate?: ITask['plannedEndDate'],
+  startDate?: ITask['startDate'],
+  endDate?: ITask['endDate'],
+
 }
 
 export interface IAuthorizationResponse {
@@ -144,8 +151,10 @@ export const getFilteredTasks = (
     if (usersTasks) {
       const filteredTasks = usersTasks
         .filter((task) => task.title.search(filter.title) > -1)
-        .filter((task) => (filter.priority ? task.priority === filter.priority : true))
-        .filter((task) => (filter.date !== '' ? task.date === filter.date : true));
+        .filter((task) => (filter.type ? task.type === filter.type : true))
+        .filter((task) => (
+          filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
+        ));
       resolve({
         type: 'success',
         message: filteredTasks,

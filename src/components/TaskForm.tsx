@@ -1,13 +1,14 @@
 import React from 'react';
 import {
-  Typography, Form, Input, Button, Select,
+  Typography, Form, Input, Button, Select, DatePicker,
 } from 'antd';
+import moment, { Moment } from 'moment';
 import { ITask } from '../api';
 
 type CustomInputProps = {
   value?: string;
   id?: string;
-  onChange?: (event: React.ChangeEvent | string) => void
+  onChange?: (event: React.ChangeEvent | string | number) => void
 }
 
 const layout = {
@@ -24,15 +25,26 @@ const { Title } = Typography;
 export const CustomInput = ({ value, id, onChange = () => {} }: CustomInputProps) => {
   switch (id) {
     case 'description': return <Input.TextArea value={value} onChange={onChange} rows={4} />;
-    case 'priority': return (
+    case 'plannedStartDate':
+    case 'plannedEndDate':
+    case 'startDate':
+    case 'endDate': return (
+      <DatePicker
+        value={moment(value)}
+        format="DD.MM.YYYY"
+        allowClear={false}
+        onChange={(newValue: Moment | null) => onChange(+moment(newValue))}
+      />
+    );
+    case 'type': return (
       <Select
         value={value}
-        style={{ width: '100%' }}
         placeholder={id}
         onChange={(newValue: string) => onChange(newValue)}
       >
-        <Select.Option value="low">Low</Select.Option>
-        <Select.Option value="high">High</Select.Option>
+        <Select.Option value="default">Default</Select.Option>
+        <Select.Option value="urgent">Urgent</Select.Option>
+        <Select.Option value="outdated">Outdated</Select.Option>
       </Select>
     );
     default: return <Input value={value} onChange={onChange} />;
