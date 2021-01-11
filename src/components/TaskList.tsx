@@ -94,10 +94,20 @@ export default () => {
             </Card>
           </Col>
           <Col span={20}>
-            <Tabs defaultActiveKey="" onChange={onDateFilterChange}>
-              <TabPane tab="All tasks" key="" />
-              <TabPane tab="Tasks for today" key="today" />
-            </Tabs>
+
+            <Row gutter={[16, 16]}>
+              <Col span={22}>
+                <Tabs defaultActiveKey="" onChange={onDateFilterChange}>
+                  <TabPane tab="All tasks" key="" />
+                  <TabPane tab="Tasks for today" key="today" />
+                </Tabs>
+              </Col>
+              <Col span={2}>
+                <Link to="/task-create">
+                  <Button type="primary">Create task</Button>
+                </Link>
+              </Col>
+            </Row>
             <Row gutter={[16, 16]}>
               {tasks.map((task) => (
                 <Col

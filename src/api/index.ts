@@ -196,3 +196,32 @@ export const editTask = (
     }
   }, DELAY);
 });
+
+export const createTask = (
+  sessionId: string,
+  data: ITask,
+) => new Promise((resolve, reject) => {
+  const user = getUser(sessionId);
+  setTimeout(() => {
+    if (user) {
+      // todo: save newData to db
+      users = {
+        ...users,
+        [user.login]: {
+          ...user,
+          tasks: user.tasks.concat(data.id),
+        },
+      };
+      tasks = {
+        ...tasks,
+        [data.id]: { ...data },
+      };
+      resolve({
+        type: 'success',
+        message: 'Task has been updated',
+      });
+    } else {
+      reject(new Error('Error while creating task. Try again later'));
+    }
+  }, DELAY);
+});

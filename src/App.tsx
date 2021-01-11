@@ -15,6 +15,7 @@ import TaskList from './components/TaskList';
 import Profile from './components/Profile';
 import Wrapper from './components/Wrapper';
 import TaskEdit from './components/TaskEdit';
+import TaskCreate from './components/TaskCreate';
 
 export default () => {
   const { sessionId } = useContext(UserContext);
@@ -55,6 +56,11 @@ export default () => {
           <Route
             path="/task-edit/:id"
             component={TaskEdit}
+          />
+          <Route
+            path="/task-create"
+            exact
+            component={TaskCreate}
           />
           <Route
             path="/profile"
