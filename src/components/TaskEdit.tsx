@@ -3,27 +3,24 @@ import {
   Button, Result, Spin, message,
 } from 'antd';
 import { Link, useParams } from 'react-router-dom';
-import { getTask, editTask, ITask } from '../api';
+import {
+  getTask, editTask, Task,
+} from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';
-
-type TaskResponse = {
-  type: string;
-  message: ITask
-}
 
 export default () => {
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
-  const [task, setTask] = useState<ITask | undefined>();
-  const params = useParams();
-  const taskId = (params as {id: string}).id;
+  const [task, setTask] = useState<Task | undefined>();
+  const params = useParams<{id: string}>();
+  const taskId = (params).id;
 
   useEffect(() => {
     setLoading(true);
     getTask(sessionId, taskId)
       .then((response) => {
-        setTask((response as TaskResponse).message);
+        setTask(response.message);
         setLoading(false);
       })
       .catch((error) => {
@@ -32,11 +29,11 @@ export default () => {
       });
   }, []);
 
-  const onFinish = (data: ITask) => {
+  const onFinish = (data: Task) => {
     setLoading(true);
     editTask(sessionId, { ...data, id: taskId })
       .then((response) => {
-        message.success((response as TaskResponse).message);
+        message.success(response.message);
         setLoading(false);
       })
       .catch((error) => {

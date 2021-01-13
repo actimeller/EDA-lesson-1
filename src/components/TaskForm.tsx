@@ -3,7 +3,7 @@ import {
   Typography, Form, Input, Button, Select, DatePicker,
 } from 'antd';
 import moment, { Moment } from 'moment';
-import { ITask } from '../api';
+import { Task } from '../api';
 
 type CustomInputProps = {
   value?: string;
@@ -53,8 +53,8 @@ export const CustomInput = ({ value, id, onChange = () => {} }: CustomInputProps
 
 interface IProps {
   title: string,
-  task: ITask,
-  onFinish: (data: ITask) => void
+  task: Task,
+  onFinish: (data: Task) => void
 }
 
 export default ({ title, onFinish, task }: IProps) => (
@@ -66,7 +66,7 @@ export default ({ title, onFinish, task }: IProps) => (
     >
       {task && Object.entries(task)
         .filter(([key]) => key !== 'id')
-        .map(([key, value]: [key:string, value: string]) => (
+        .map(([key, value]) => (
           <Form.Item
             name={key}
             label={key}

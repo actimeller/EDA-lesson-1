@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router-dom';
-import { restore, IAuthorizationResponse } from '../api';
+import { restore } from '../api';
 import UserContext from '../context/UserContext';
 
 export default () => {
@@ -16,7 +16,7 @@ export default () => {
     setLoading(true);
     restore(credentials)
       .then((response) => {
-        setSessionId((response as IAuthorizationResponse).message);
+        setSessionId(response.message);
         history.push('/');
       })
       .catch((error) => {

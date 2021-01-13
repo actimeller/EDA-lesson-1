@@ -12,11 +12,6 @@ type CustomInputProps = {
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-type EditResponse = {
-  type: string;
-  message: string
-}
-
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 16 },
@@ -51,7 +46,7 @@ export default () => {
     setLoading(true);
     editUser(sessionId, data)
       .then((response) => {
-        message.success((response as EditResponse).message);
+        message.success(response.message);
         setLoading(false);
       })
       .catch((error) => {
@@ -81,7 +76,7 @@ export default () => {
         >
           {Object.entries(user)
             .filter(([key]) => key !== 'tasks')
-            .map(([key, value]: [key:string, value: string]) => (
+            .map(([key, value]) => (
               <Form.Item
                 name={key}
                 label={key}

@@ -5,20 +5,16 @@ import {
 import { EditOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import { getFilteredTasks, ITask, ITaskFilter } from '../api';
+import { getFilteredTasks, Task, TaskFilter } from '../api';
 import UserContext from '../context/UserContext';
 
-type TaskResponse = {
-  type: string;
-  message: ITask[] | string;
-};
 const { TabPane } = Tabs;
 
 export default () => {
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
-  const [tasks, setTasks] = useState<ITask[]>([]);
-  const [filter, setFilter] = useState<ITaskFilter>({
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [filter, setFilter] = useState<TaskFilter>({
     title: '',
   });
 
@@ -27,7 +23,7 @@ export default () => {
     title: event.target.value,
   });
 
-  const ontypeFilterChange = (value: ITask['type']) => setFilter({
+  const ontypeFilterChange = (value: Task['type']) => setFilter({
     ...filter,
     type: value || null,
   });
@@ -49,12 +45,12 @@ export default () => {
     setLoading(true);
     getFilteredTasks(sessionId, filter)
       .then((response) => {
-        const taskResponse = (response as TaskResponse).message;
-        if (taskResponse instanceof Array) {
-          setTasks(taskResponse);
-        } else {
-          message.error(taskResponse);
-        }
+        const filteredTasksResponse = response.message;
+        setTasks(filteredTasksResponse);
+        // if (filteredTasksResponse instanceof Array) {
+        // } else {
+        //   message.error(filteredTasksResponse);
+        // }
         setLoading(false);
       })
       .catch((error) => {

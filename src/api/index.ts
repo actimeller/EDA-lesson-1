@@ -1,7 +1,22 @@
 import usersResponse from './users.json';
 import tasksResponse from './tasks.json';
 
-export interface ITask {
+export type BaseResponse = {
+  type: string;
+  message: string
+}
+
+export type TaskResponse = {
+  type: string;
+  message: Task | undefined
+}
+
+type TaskListResponse = {
+  type: string;
+  message: Task[];
+};
+
+export type Task = {
   id: string,
   title: string,
   description: string,
@@ -12,27 +27,15 @@ export interface ITask {
   endDate: number
 }
 
-export interface ITaskFilter {
-  title: ITask['title'],
-  type?: ITask['type'] | undefined,
-  plannedStartDate?: ITask['plannedStartDate'],
-  plannedEndDate?: ITask['plannedEndDate'],
-  startDate?: ITask['startDate'],
-  endDate?: ITask['endDate'],
+export type TaskFilter =
+  Pick<Task, 'title'> & Partial<Omit<Task, 'id' | 'title' | 'description'>>;
 
-}
-
-export interface IAuthorizationResponse {
-  type: string;
-  message: string
-}
-
-interface Credentials {
+type Credentials = {
   login: string,
   password: string,
 }
 
-interface User extends Credentials {
+type User = Credentials & {
   keyword: string;
   name: string;
   photo: string;
@@ -41,8 +44,8 @@ interface User extends Credentials {
 
 const DELAY = 500;
 
-let users = usersResponse as { [key: string]: User };
-let tasks = tasksResponse as { [key: string]: ITask };
+let users: Record<string, User> = usersResponse;
+let tasks: Record<string, Task> = tasksResponse as { [key: string]: Task };
 
 const checkCredentials = ({ login, password }: Credentials): boolean => {
   const user = users[login];
@@ -54,7 +57,9 @@ const generateSessionId = (
   login: string,
 ): string => `${login}:${Math.random().toString(36).substr(2, 12)}`;
 
-export const authorization = (credentials: Credentials) => new Promise((resolve, reject) => {
+export const authorization = (
+  credentials: Credentials,
+): Promise<BaseResponse> => new Promise((resolve, reject) => {
   const { login } = credentials;
   setTimeout(() => {
     if (checkCredentials(credentials)) {
@@ -71,7 +76,7 @@ export const authorization = (credentials: Credentials) => new Promise((resolve,
 
 export const registration = (
   { login }: Credentials,
-) => new Promise((resolve, reject) => {
+): Promise<BaseResponse> => new Promise((resolve, reject) => {
   setTimeout(() => {
     if (!users[login]) {
       // todo: save this user in db
@@ -89,7 +94,7 @@ export const registration = (
 export const restore = (
   { login, keyword }:
   { login: User['login'], keyword: User['keyword'] },
-) => new Promise((resolve, reject) => {
+): Promise<BaseResponse> => new Promise((resolve, reject) => {
   setTimeout(() => {
     if (users[login].keyword === keyword) {
       // todo: send restored password to email
@@ -112,7 +117,7 @@ export const getUser = (sessionId: string): User | undefined => {
 export const editUser = (
   sessionId: string,
   newUserData: User,
-) => new Promise((resolve, reject) => {
+):Promise<{ type: string; message: string}> => new Promise((resolve, reject) => {
   const user = getUser(sessionId);
   setTimeout(() => {
     // todo: save newData to db
@@ -131,7 +136,7 @@ export const editUser = (
   }, DELAY);
 });
 
-const getUsersTasks = (sessionId: string): ITask[] | false => {
+const getUsersTasks = (sessionId: string): Task[] | false => {
   const user = getUser(sessionId);
   if (user) {
     const usersTasks = (user as User).tasks
@@ -144,8 +149,8 @@ const getUsersTasks = (sessionId: string): ITask[] | false => {
 
 export const getFilteredTasks = (
   sessionId: string,
-  filter: ITaskFilter,
-) => new Promise((resolve, reject) => {
+  filter: TaskFilter,
+): Promise<TaskListResponse> => new Promise((resolve, reject) => {
   const usersTasks = getUsersTasks(sessionId);
   setTimeout(() => {
     if (usersTasks) {
@@ -167,8 +172,8 @@ export const getFilteredTasks = (
 
 export const getTask = (
   sessionId: string,
-  id: ITask['id'],
-) => new Promise((resolve, reject) => {
+  id: Task['id'],
+): Promise<TaskResponse> => new Promise((resolve, reject) => {
   const usersTasks = getUsersTasks(sessionId);
   setTimeout(() => {
     if (usersTasks) {
@@ -186,8 +191,8 @@ export const getTask = (
 
 export const editTask = (
   sessionId: string,
-  data: ITask,
-) => new Promise((resolve, reject) => {
+  data: Task,
+): Promise<BaseResponse> => new Promise((resolve, reject) => {
   const usersTasks = getUsersTasks(sessionId);
   setTimeout(() => {
     if (usersTasks && usersTasks.find((task) => task.id === data.id)) {
@@ -208,8 +213,8 @@ export const editTask = (
 
 export const createTask = (
   sessionId: string,
-  data: ITask,
-) => new Promise((resolve, reject) => {
+  data: Task,
+): Promise<BaseResponse> => new Promise((resolve, reject) => {
   const user = getUser(sessionId);
   setTimeout(() => {
     if (user) {

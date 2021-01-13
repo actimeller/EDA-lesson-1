@@ -4,17 +4,12 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import {
-  ITask, createTask,
+  TaskResponse, Task, createTask,
 } from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';
 
-type TaskResponse = {
-  type: string;
-  message: ITask
-}
-
-const initialTask: ITask = {
+const initialTask: Task = {
   id: '',
   title: '',
   description: '',
@@ -30,12 +25,12 @@ export default () => {
   const [loading, setLoading] = useState(false);
   const task = initialTask;
 
-  const onFinish = (data: ITask) => {
+  const onFinish = (data: Task) => {
     setLoading(true);
     const randomId = Math.floor(Math.random() * 100).toString();
     createTask(sessionId, { ...data, id: randomId })
       .then((response) => {
-        message.success((response as TaskResponse).message);
+        message.success(response.message);
         setLoading(false);
       })
       .catch((error) => {
