@@ -3,7 +3,7 @@ import {
   Typography, Form, Input, Button, Result, Spin, message,
 } from 'antd';
 import { Link } from 'react-router-dom';
-import { getUser, editUser } from '../api';
+import { editUser, getSessionUser } from '../api';
 import UserContext from '../context/UserContext';
 
 type CustomInputProps = {
@@ -40,7 +40,7 @@ const CustomInput = ({ value, id, onChange }: CustomInputProps) => {
 export default () => {
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
-  const user = getUser(sessionId);
+  const user = getSessionUser(sessionId);
 
   const onFinish = (data: any) => {
     setLoading(true);

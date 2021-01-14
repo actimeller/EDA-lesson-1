@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import {
-  TaskResponse, Task, createTask,
+  Task, createTask,
 } from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';

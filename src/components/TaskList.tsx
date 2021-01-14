@@ -47,10 +47,6 @@ export default () => {
       .then((response) => {
         const filteredTasksResponse = response.message;
         setTasks(filteredTasksResponse);
-        // if (filteredTasksResponse instanceof Array) {
-        // } else {
-        //   message.error(filteredTasksResponse);
-        // }
         setLoading(false);
       })
       .catch((error) => {
