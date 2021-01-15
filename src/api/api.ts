@@ -109,6 +109,7 @@ export const getFilteredTasks = (
         .filter((task) => (
           filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
         ));
+      // console.info(filteredTasks);
       resolve({
         type: 'success',
         message: filteredTasks,
