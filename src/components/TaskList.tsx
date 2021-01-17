@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import { getFilteredTasks, Task, TaskFilter } from '../api';
 import UserContext from '../context/UserContext';
-import { debounce } from '../utils';
+import { connectionChecker, debounce } from '../utils';
 
 const { TabPane } = Tabs;
 
@@ -21,7 +21,6 @@ export default () => {
     title: '',
   });
   const filterRef = useRef<TaskFilter>();
-
   filterRef.current = filter;
 
   const onTitleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => setFilter({
@@ -50,7 +49,7 @@ export default () => {
   const fetchTasks = () => {
     if (!filterRef.current) return;
     setLoading(true);
-    getFilteredTasks(sessionId, filterRef.current)
+    connectionChecker(getFilteredTasks(sessionId, filterRef.current), fetchTasks)
       .then((response) => {
         const filteredTasksResponse = response.message;
         setTasks(filteredTasksResponse);
@@ -58,7 +57,6 @@ export default () => {
       })
       .catch((error) => {
         message.error(error.toString());
-        setLoading(false);
       });
   };
 
