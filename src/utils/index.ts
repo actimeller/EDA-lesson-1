@@ -8,19 +8,20 @@ export const debounce = (func: Function, delay: number) => {
   };
 };
 
-export const createReduxAction = (type: string) => (payload: any) => ({
-  type,
-  payload,
-});
-
-export const connectionChecker = (
-  func: Promise<any>, reconnect: any,
+export const connectionChecker = async (
+  func: Promise<any>, reconnect: Function,
 ) => Promise.race([
   func,
   new Promise(
     (resolve, reject) => setTimeout(() => {
       reject(new Error('Connection error. Reconecting...'));
-      setTimeout(reconnect, RECONNECT_DELAY);
     }, DELAY),
   ),
-]);
+]).catch((error) => {
+  setTimeout(reconnect, RECONNECT_DELAY);
+  throw (error);
+});
+
+export const randomInt = (
+  min:number, max: number,
+) => min + Math.floor((max - min) * Math.random());

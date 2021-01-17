@@ -6,6 +6,12 @@ import {
 import {
   getUser, setUser, getSessionUser, getAllUsersTasks, setTask,
 } from './storage';
+import { randomInt } from '../utils';
+
+const randomDelayResponse = (func: Function) => {
+  const delay = randomInt(0, DELAY * 1.5);
+  setTimeout(func, delay);
+};
 
 const checkCredentials = ({ login, password }: Credentials): boolean => {
   const user = getUser(login);
@@ -21,7 +27,7 @@ export const authorization = (
   credentials: Credentials,
 ): Promise<BaseResponse> => new Promise((resolve, reject) => {
   const { login } = credentials;
-  setTimeout(() => {
+  randomDelayResponse(() => {
     if (checkCredentials(credentials)) {
       const sessionId = generateSessionId(login);
       resolve({
@@ -31,13 +37,13 @@ export const authorization = (
     } else {
       reject(new Error('Auth failed. Please provide correct credentials'));
     }
-  }, DELAY);
+  });
 });
 
 export const registration = (
   { login, password }: Credentials,
 ): Promise<BaseResponse> => new Promise((resolve, reject) => {
-  setTimeout(() => {
+  randomDelayResponse(() => {
     const user = getUser(login);
     if (!user) {
       setUser({
@@ -56,14 +62,14 @@ export const registration = (
     } else {
       reject(new Error('You cannot be registred with this username'));
     }
-  }, DELAY);
+  });
 });
 
 export const restore = (
   { login, keyword }:
   { login: User['login'], keyword: User['keyword'] },
 ): Promise<BaseResponse> => new Promise((resolve, reject) => {
-  setTimeout(() => {
+  randomDelayResponse(() => {
     const user = getUser(login);
     if (user?.keyword === keyword) {
       // todo: send restored password to email
@@ -75,7 +81,7 @@ export const restore = (
     } else {
       reject(new Error('Key passoword is incorrect'));
     }
-  }, DELAY);
+  });
 });
 
 export const editUser = (
@@ -83,7 +89,7 @@ export const editUser = (
   newUserData: User,
 ):Promise<{ type: string; message: string}> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
-  setTimeout(() => {
+  randomDelayResponse(() => {
     if (user) {
       setUser(newUserData);
       resolve({
@@ -93,7 +99,7 @@ export const editUser = (
     } else {
       reject(new Error('Error while saving data. Try again later'));
     }
-  }, DELAY);
+  });
 });
 
 export const getFilteredTasks = (
@@ -101,7 +107,7 @@ export const getFilteredTasks = (
   filter: TaskFilter,
 ): Promise<TaskListResponse> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
-  setTimeout(() => {
+  randomDelayResponse(() => {
     if (user) {
       const filteredTasks = getAllUsersTasks(user)
         .filter((task) => task.title.search(filter.title) > -1)
@@ -109,7 +115,6 @@ export const getFilteredTasks = (
         .filter((task) => (
           filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
         ));
-      // console.info(filteredTasks);
       resolve({
         type: 'success',
         message: filteredTasks,
@@ -117,7 +122,7 @@ export const getFilteredTasks = (
     } else {
       reject(new Error('Error while getting tasks. Try again later'));
     }
-  }, DELAY);
+  });
 });
 
 export const getTask = (
@@ -125,7 +130,7 @@ export const getTask = (
   id: Task['id'],
 ): Promise<TaskResponse> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
-  setTimeout(() => {
+  randomDelayResponse(() => {
     if (user) {
       const filteredTask = getAllUsersTasks(user)
         .find((task) => task.id === id);
@@ -136,7 +141,7 @@ export const getTask = (
     } else {
       reject(new Error('Error while getting task. Try again later'));
     }
-  }, DELAY);
+  });
 });
 
 export const editTask = (
@@ -144,7 +149,7 @@ export const editTask = (
   data: Task,
 ): Promise<BaseResponse> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
-  setTimeout(() => {
+  randomDelayResponse(() => {
     if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
       setTask(data);
       resolve({
@@ -154,7 +159,7 @@ export const editTask = (
     } else {
       reject(new Error('Error while saving task. Try again later'));
     }
-  }, DELAY);
+  });
 });
 
 export const createTask = (
@@ -162,7 +167,7 @@ export const createTask = (
   data: Task,
 ): Promise<BaseResponse> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
-  setTimeout(() => {
+  randomDelayResponse(() => {
     if (user) {
       setUser({
         ...user,
@@ -176,5 +181,5 @@ export const createTask = (
     } else {
       reject(new Error('Error while creating task. Try again later'));
     }
-  }, DELAY);
+  });
 });

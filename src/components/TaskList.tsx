@@ -46,18 +46,19 @@ export default () => {
     title: '',
   });
 
-  const fetchTasks = () => {
+  const fetchTasks = async () => {
     if (!filterRef.current) return;
     setLoading(true);
-    connectionChecker(getFilteredTasks(sessionId, filterRef.current), fetchTasks)
-      .then((response) => {
-        const filteredTasksResponse = response.message;
-        setTasks(filteredTasksResponse);
-        setLoading(false);
-      })
-      .catch((error) => {
-        message.error(error.toString());
-      });
+    try {
+      const response = await connectionChecker(
+        getFilteredTasks(sessionId, filterRef.current), fetchTasks,
+      );
+      const filteredTasksResponse = response.message;
+      setTasks(filteredTasksResponse);
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+    }
   };
 
   const debouncedFetchTasks = useCallback(
