@@ -1,4 +1,6 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, {
+  useContext, useState, useEffect, useCallback, useRef,
+} from 'react';
 import {
   message, Spin, Card, Col, Row, Input, Select, Empty, Tabs, Button,
 } from 'antd';
@@ -7,6 +9,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import { getFilteredTasks, Task, TaskFilter } from '../api';
 import UserContext from '../context/UserContext';
+import { connectionChecker, debounce } from '../utils';
 
 const { TabPane } = Tabs;
 
@@ -17,6 +20,8 @@ export default () => {
   const [filter, setFilter] = useState<TaskFilter>({
     title: '',
   });
+  const filterRef = useRef<TaskFilter>();
+  filterRef.current = filter;
 
   const onTitleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => setFilter({
     ...filter,
@@ -41,18 +46,28 @@ export default () => {
     title: '',
   });
 
-  useEffect(() => {
+  const fetchTasks = async () => {
+    if (!filterRef.current) return;
     setLoading(true);
-    getFilteredTasks(sessionId, filter)
-      .then((response) => {
-        const filteredTasksResponse = response.message;
-        setTasks(filteredTasksResponse);
-        setLoading(false);
-      })
-      .catch((error) => {
-        message.error(error.toString());
-        setLoading(false);
-      });
+    try {
+      const response = await connectionChecker(
+        getFilteredTasks(sessionId, filterRef.current), fetchTasks,
+      );
+      const filteredTasksResponse = response.message;
+      setTasks(filteredTasksResponse);
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+    }
+  };
+
+  const debouncedFetchTasks = useCallback(
+    debounce(fetchTasks, 300),
+    [],
+  );
+
+  useEffect(() => {
+    debouncedFetchTasks();
   }, [filter]);
 
   return (
