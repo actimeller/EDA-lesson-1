@@ -2,25 +2,29 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   Button, Result, Spin, message,
 } from 'antd';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
-  getTask, editTask, Task,
+  getTask, editTask, Task, removeTask,
 } from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';
+import { setTodayTasks } from '../store/tasks/actions';
 
 export default () => {
+  const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [task, setTask] = useState<Task | undefined>();
   const params = useParams<{id: string}>();
   const taskId = (params).id;
+  const history = useHistory();
 
   useEffect(() => {
     setLoading(true);
     getTask(sessionId, taskId)
       .then((response) => {
-        setTask(response.message);
+        setTask(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -29,17 +33,30 @@ export default () => {
       });
   }, []);
 
-  const onFinish = (data: Task) => {
+  const onFinish = async (data: Task) => {
     setLoading(true);
-    editTask(sessionId, { ...data, id: taskId })
-      .then((response) => {
-        message.success(response.message);
-        setLoading(false);
-      })
-      .catch((error) => {
-        message.error(error.toString());
-        setLoading(false);
-      });
+    const newData = { ...data, id: taskId };
+    try {
+      const response = await editTask(sessionId, newData);
+      message.success(response.message);
+      dispatch(setTodayTasks(response.data));
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+      setLoading(false);
+    }
+  };
+
+  const onTaskRemove = async (data: Task) => {
+    setLoading(true);
+    try {
+      const response = await removeTask(sessionId, data);
+      dispatch(setTodayTasks(response.data));
+      setLoading(false);
+      history.push('/');
+    } catch (error) {
+      message.error(error.toString());
+    }
   };
 
   if (!loading && !task) {
@@ -59,6 +76,7 @@ export default () => {
         <TaskForm
           title="Edit Task"
           onFinish={onFinish}
+          onTaskRemove={onTaskRemove}
           task={task}
         />
       )}

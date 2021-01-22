@@ -4,16 +4,21 @@ import React, {
 import {
   message, Spin, Card, Col, Row, Input, Select, Empty, Tabs, Button,
 } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import { getFilteredTasks, Task, TaskFilter } from '../api';
+import { useDispatch } from 'react-redux';
+import {
+  getFilteredTasks, removeTask, Task, TaskFilter,
+} from '../api';
 import UserContext from '../context/UserContext';
 import { connectionChecker, debounce } from '../utils';
+import { setTodayTasks } from '../store/tasks/actions';
 
 const { TabPane } = Tabs;
 
 export default () => {
+  const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -37,6 +42,7 @@ export default () => {
     setFilter({
       ...filter,
       plannedStartDate: value === 'today' ? +moment().startOf('day') : undefined,
+      plannedEndDate: value === 'today' ? +moment().endOf('day') : undefined,
     });
   };
 
@@ -46,6 +52,18 @@ export default () => {
     title: '',
   });
 
+  const onTaskRemove = async (task: Task) => {
+    setLoading(true);
+    try {
+      const response = await removeTask(sessionId, task);
+      setTasks(response.data);
+      dispatch(setTodayTasks(response.data));
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+    }
+  };
+
   const fetchTasks = async () => {
     if (!filterRef.current) return;
     setLoading(true);
@@ -53,7 +71,7 @@ export default () => {
       const response = await connectionChecker(
         getFilteredTasks(sessionId, filterRef.current), fetchTasks,
       );
-      const filteredTasksResponse = response.message;
+      const filteredTasksResponse = response.data;
       setTasks(filteredTasksResponse);
       setLoading(false);
     } catch (error) {
@@ -130,6 +148,11 @@ export default () => {
                     extra={
                       <Link to={`/task-edit/${task.id}`}><EditOutlined key="edit" /></Link>
                     }
+                    actions={[
+                      // <EditOutlined key="edit" onClick={() => console.info(edit)} />,
+                      <DeleteOutlined key="remove" onClick={() => onTaskRemove(task)} />,
+                      // <EllipsisOutlined key="ellipsis" />,
+                    ]}
                     style={task.type === 'urgent' ? { border: '1px solid red' } : undefined}
                   >
                     {task.description}

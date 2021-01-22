@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Typography, Form, Input, Button, Select, DatePicker,
+  Typography, Form, Input, Button, Select, DatePicker, Space,
 } from 'antd';
 import moment, { Moment } from 'moment';
 import { Task } from '../api';
@@ -31,8 +31,9 @@ export const CustomInput = ({ value, id, onChange = () => {} }: CustomInputProps
     case 'endDate': return (
       <DatePicker
         value={moment(value)}
-        format="DD.MM.YYYY"
+        format="DD.MM.YYYY HH:mm"
         allowClear={false}
+        showTime
         onChange={(newValue: Moment | null) => onChange(+moment(newValue))}
       />
     );
@@ -55,9 +56,12 @@ interface IProps {
   title: string,
   task: Task,
   onFinish: (data: Task) => void
+  onTaskRemove?: (data: Task) => void
 }
 
-export default ({ title, onFinish, task }: IProps) => (
+export default ({
+  title, onFinish, task, onTaskRemove,
+}: IProps) => (
   <div className="TaskForm">
     <Title level={2}>{title}</Title>
     <Form
@@ -83,9 +87,21 @@ export default ({ title, onFinish, task }: IProps) => (
           </Form.Item>
         ))}
       <Form.Item {...tailLayout}>
-        <Button type="primary" htmlType="submit">
-          Save
-        </Button>
+        <Space>
+          {onTaskRemove && (
+            <Button
+              type="default"
+              htmlType="button"
+              className="ant-btn-danger"
+              onClick={() => onTaskRemove(task)}
+            >
+              Delete
+            </Button>
+          )}
+          <Button type="primary" htmlType="submit">
+            Save
+          </Button>
+        </Space>
       </Form.Item>
     </Form>
   </div>

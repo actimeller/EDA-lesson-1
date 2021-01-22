@@ -16,6 +16,7 @@ import Profile from './components/Profile';
 import Wrapper from './components/Wrapper';
 import TaskEdit from './components/TaskEdit';
 import TaskCreate from './components/TaskCreate';
+import TaskTodayWidget from './components/TaskTodayWidget';
 
 export default () => {
   const { sessionId } = useContext(UserContext);
@@ -49,19 +50,25 @@ export default () => {
       <Wrapper>
         <Switch>
           <Route
-            path="/"
-            exact
-            component={TaskList}
-          />
-          <Route
-            path="/task-edit/:id"
-            component={TaskEdit}
-          />
-          <Route
-            path="/task-create"
-            exact
-            component={TaskCreate}
-          />
+            path={['/', '/task']}
+          >
+            <TaskTodayWidget />
+            <Route
+              path="/"
+              exact
+              component={TaskList}
+            />
+            <Route
+              path="/task-edit/:id"
+              component={TaskEdit}
+            />
+            <Route
+              path="/task-create"
+              exact
+              component={TaskCreate}
+            />
+          </Route>
+
           <Route
             path="/profile"
             exact

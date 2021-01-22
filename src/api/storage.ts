@@ -57,6 +57,14 @@ export const setTask = (task: Task) => {
   });
 };
 
+export const deleteTask = (task: Task) => {
+  const tasks = getAllTasks();
+  delete tasks[task.id];
+  setTasks({
+    ...tasks,
+  });
+};
+
 export const getAllUsersTasks = (user: User): Task[] => user.tasks
   .map((taskId:string) => getTask(taskId)!)
   .filter(Boolean);
