@@ -8,14 +8,24 @@ import UserContext from '../context/UserContext';
 import { setTodayTasks } from '../store/tasks/actions';
 import { RootState } from '../store';
 
-const TaskItem = ({ task }: {task: Task}) => (
-  <Link
-    to={`/task-edit/${task.id}`}
-    className="TaskTodayWidget-item"
-  >
-    {task.title}
-  </Link>
-);
+const dayDuration = +moment().startOf('day') - +moment().endOf('day');
+
+const TaskItem = ({ task }: {task: Task}) => {
+  const taskDuration = (task.plannedStartDate - task.plannedEndDate) / dayDuration;
+  const taskOffset = (+moment().startOf('day') - task.plannedStartDate) / dayDuration;
+  return (
+    <Link
+      to={`/task-edit/${task.id}`}
+      className="TaskTodayWidget-item"
+      style={{
+        width: `${taskDuration * 100}%`,
+        left: `${taskOffset * 100}%`,
+      }}
+    >
+      {task.title}
+    </Link>
+  );
+};
 
 export default () => {
   const dispatch = useDispatch();
@@ -24,7 +34,7 @@ export default () => {
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const grid = [];
-  for (let i = 0; i <= 24; i += 1) {
+  for (let i = 0; i < 24; i += 1) {
     grid.push(`${i < 10 ? '0' : ''}${i}:00`);
   }
 
