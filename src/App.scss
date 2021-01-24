@@ -78,7 +78,6 @@ $border-grey: #d9d9d9;
   border: 1px solid $border-grey;
   width: 100%;
   padding: 10px;
-  min-height: 100px;
   margin: 0 0 50px;
   background: #fff;
   position: relative;
@@ -111,16 +110,15 @@ $border-grey: #d9d9d9;
     margin: 10px -12px 20px;
     position: relative;
     z-index: 1;
+    transition: all 0.3s ease-in-out;
   }
   &-item {
     border-radius: 50px;
-    background: #ccc;
     padding: 0 10px;
     font-size: 80%;
     line-height: 20px;
     margin: 5px 0;
     display: block;
-    color: #000 !important;
     position: relative;
     transition: all 0.3s ease-in-out;
     white-space: nowrap;
@@ -128,6 +126,9 @@ $border-grey: #d9d9d9;
     text-overflow: ellipsis;
     width: 0;
     min-width: 50px;
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 }
 

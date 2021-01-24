@@ -16,6 +16,7 @@ export type Task = {
     title: string;
     description: string;
     type: 'default' | 'urgent' | 'outdated';
+    status: 'planned' | 'active' | 'finished';
     plannedStartDate: number;
     plannedEndDate: number;
     startDate: number;

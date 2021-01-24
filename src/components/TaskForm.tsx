@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Typography, Form, Input, Button, Select, DatePicker, Space,
+  Typography, Form, Input, Button, Select, DatePicker, Space, Radio,
 } from 'antd';
 import moment, { Moment } from 'moment';
 import { Task } from '../api';
@@ -48,6 +48,21 @@ export const CustomInput = ({ value, id, onChange = () => {} }: CustomInputProps
         <Select.Option value="outdated">Outdated</Select.Option>
       </Select>
     );
+    case 'status':
+      return (
+        <Radio.Group
+          options={[
+            { label: 'Planned', value: 'planned' },
+            { label: 'Active', value: 'active' },
+            { label: 'Finished', value: 'finished' },
+          ]}
+          optionType="button"
+          buttonStyle="solid"
+          onChange={(event) => onChange(event.target.value)}
+          value={value}
+        />
+      );
+
     default: return <Input value={value} onChange={onChange} />;
   }
 };

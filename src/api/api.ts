@@ -112,6 +112,7 @@ export const getFilteredTasks = (
       const filteredTasks = getAllUsersTasks(user)
         .filter((task) => task.title.search(filter.title ? filter.title : '') > -1)
         .filter((task) => (filter.type ? task.type === filter.type : true))
+        .filter((task) => (filter.status ? task.status === filter.status : true))
         .filter((task) => (
           filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
         ));

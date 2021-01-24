@@ -35,3 +35,14 @@ export const createReduxAction = (type: string) => (payload: any) => ({
 });
 
 export const isTodayTask = (task: Task) => task.plannedStartDate >= +moment().startOf('day');
+
+export const getStatusColor = (color: Task['status']) => {
+  switch (color) {
+    case 'active':
+      return 'processing';
+    case 'finished':
+      return 'success';
+    default:
+      return 'default';
+  }
+};

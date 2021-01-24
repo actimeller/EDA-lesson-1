@@ -16,6 +16,7 @@ const initialTask: Task = {
   title: '',
   description: '',
   type: 'default',
+  status: 'planned',
   plannedStartDate: new Date().getTime(),
   plannedEndDate: new Date().getTime(),
   startDate: new Date().getTime(),
