@@ -2,16 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import UserContextProvider from './context/UserContextProvider';
+import store from './store';
 
 ReactDOM.render(
-  <UserContextProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </UserContextProvider>,
+  <Provider store={store}>
+    <UserContextProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </UserContextProvider>
+  </Provider>,
   document.getElementById('root'),
 );
 

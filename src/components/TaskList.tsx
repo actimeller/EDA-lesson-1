@@ -2,18 +2,24 @@ import React, {
   useContext, useState, useEffect, useCallback, useRef,
 } from 'react';
 import {
-  message, Spin, Card, Col, Row, Input, Select, Empty, Tabs, Button,
+  message, Spin, Card, Col, Row, Input, Select, Empty, Tabs, Button, Dropdown, Menu, Tag,
 } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import { getFilteredTasks, Task, TaskFilter } from '../api';
+import { useDispatch } from 'react-redux';
+import {
+  editTask,
+  getFilteredTasks, removeTask, Task, TaskFilter,
+} from '../api';
 import UserContext from '../context/UserContext';
-import { connectionChecker, debounce } from '../utils';
+import { connectionChecker, debounce, getStatusColor } from '../utils';
+import { setTodayTasks } from '../store/tasks/actions';
 
 const { TabPane } = Tabs;
 
 export default () => {
+  const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -28,23 +34,59 @@ export default () => {
     title: event.target.value,
   });
 
-  const ontypeFilterChange = (value: Task['type']) => setFilter({
+  const onTypeFilterChange = (value: Task['type']) => setFilter({
     ...filter,
     type: value || null,
+  });
+
+  const onStatusFilterChange = (value: Task['status']) => setFilter({
+    ...filter,
+    status: value || null,
   });
 
   const onDateFilterChange = (value: string) => {
     setFilter({
       ...filter,
       plannedStartDate: value === 'today' ? +moment().startOf('day') : undefined,
+      plannedEndDate: value === 'today' ? +moment().endOf('day') : undefined,
     });
   };
 
   const onFilterReset = () => setFilter({
     ...filter,
     type: undefined,
+    status: undefined,
     title: '',
   });
+
+  const onTaskRemove = async (task: Task) => {
+    setLoading(true);
+    try {
+      const response = await removeTask(sessionId, task);
+      setTasks(response.data);
+      dispatch(setTodayTasks(response.data));
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+    }
+  };
+
+  const onTaskStatusChange = async (task: Task, status: Task['status']) => {
+    setLoading(true);
+    try {
+      const response = await editTask(sessionId, {
+        ...task,
+        status,
+      });
+      message.success(response.message);
+      setTasks(response.data);
+      dispatch(setTodayTasks(response.data));
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+      setLoading(false);
+    }
+  };
 
   const fetchTasks = async () => {
     if (!filterRef.current) return;
@@ -53,8 +95,7 @@ export default () => {
       const response = await connectionChecker(
         getFilteredTasks(sessionId, filterRef.current), fetchTasks,
       );
-      const filteredTasksResponse = response.message;
-      setTasks(filteredTasksResponse);
+      setTasks(response.data);
       setLoading(false);
     } catch (error) {
       message.error(error.toString());
@@ -94,12 +135,25 @@ export default () => {
                 style={{ width: '100%', marginTop: '16px' }}
                 placeholder="type"
                 allowClear
-                onChange={ontypeFilterChange}
+                onChange={onTypeFilterChange}
               >
                 <Select.Option value="default">Default</Select.Option>
                 <Select.Option value="urgent">Urgent</Select.Option>
                 <Select.Option value="outdated">Outdated</Select.Option>
               </Select>
+
+              <Select
+                value={filter.status}
+                style={{ width: '100%', marginTop: '16px' }}
+                placeholder="status"
+                allowClear
+                onChange={onStatusFilterChange}
+              >
+                <Select.Option value="active">Active</Select.Option>
+                <Select.Option value="planned">Planned</Select.Option>
+                <Select.Option value="finished">Finished</Select.Option>
+              </Select>
+
             </Card>
           </Col>
           <Col span={20}>
@@ -126,10 +180,27 @@ export default () => {
                   key={task.id}
                 >
                   <Card
+                    className="TaskListCard"
                     title={task.title}
-                    extra={
-                      <Link to={`/task-edit/${task.id}`}><EditOutlined key="edit" /></Link>
-                    }
+                    extra={[
+                      <Tag key={task.id} color={getStatusColor(task.status)}>
+                        {task.status}
+                      </Tag>,
+                    ]}
+                    actions={[
+                      <Link to={`/task-edit/${task.id}`}><EditOutlined key="edit" /></Link>,
+                      <DeleteOutlined key="remove" onClick={() => onTaskRemove(task)} />,
+                      <Dropdown overlay={(
+                        <Menu onClick={(item) => onTaskStatusChange(task, (item.key as Task['status']))}>
+                          <Menu.Item key="active">Set as active</Menu.Item>
+                          <Menu.Item key="planned">Set as planned</Menu.Item>
+                          <Menu.Item key="finished">Set as finished</Menu.Item>
+                        </Menu>
+                        )}
+                      >
+                        <EllipsisOutlined key="ellipsis" />
+                      </Dropdown>,
+                    ]}
                     style={task.type === 'urgent' ? { border: '1px solid red' } : undefined}
                   >
                     {task.description}

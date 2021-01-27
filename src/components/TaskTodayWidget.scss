@@ -1,0 +1,57 @@
+.TaskTodayWidget {
+  border: 1px solid $border-grey;
+  width: 100%;
+  padding: 10px;
+  margin: 0 0 50px;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  &-grid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    span {
+      width: 100%;
+      display: block;
+      text-align: center;
+      height: 100%;
+      position: relative;
+      align-items: flex-end;
+      display: flex;
+      justify-content: center;
+      color: #000;
+      opacity: 0.6;
+      &:nth-child(even) {
+        background: rgba($border-grey, 0.5);
+      }
+    }
+  }
+  &-list {
+    margin: 10px -12px 20px;
+    position: relative;
+    z-index: 1;
+    transition: $base-transition;
+  }
+  &-item {
+    border-radius: 50px;
+    padding: 0 10px;
+    font-size: 80%;
+    line-height: 20px;
+    margin: 5px 0;
+    display: block;
+    position: relative;
+    transition: $base-transition;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 0;
+    min-width: 50px;
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}

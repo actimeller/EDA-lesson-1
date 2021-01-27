@@ -3,14 +3,12 @@ export type BaseResponse = {
     message: string;
 };
 
-export type TaskResponse = {
-    type: string;
-    message: Task | undefined;
+export type TaskResponse = BaseResponse & {
+    data: Task | undefined;
 };
 
-export type TaskListResponse = {
-    type: string;
-    message: Task[];
+export type TaskListResponse = BaseResponse & {
+    data: Task[];
 };
 
 export type Task = {
@@ -18,14 +16,14 @@ export type Task = {
     title: string;
     description: string;
     type: 'default' | 'urgent' | 'outdated';
+    status: 'planned' | 'active' | 'finished';
     plannedStartDate: number;
     plannedEndDate: number;
     startDate: number;
     endDate: number;
 };
 
-export type TaskFilter = Pick<Task, 'title'> &
-    Partial<Omit<Task, 'id' | 'title' | 'description'>>;
+export type TaskFilter = Partial<Omit<Task, 'id' | 'description'>>;
 
 export type Credentials = {
     login: string;

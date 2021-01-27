@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Typography, Form, Input, Button, Select, DatePicker,
+  Typography, Form, Input, Button, Select, DatePicker, Space, Radio,
 } from 'antd';
 import moment, { Moment } from 'moment';
 import { Task } from '../api';
@@ -31,8 +31,9 @@ export const CustomInput = ({ value, id, onChange = () => {} }: CustomInputProps
     case 'endDate': return (
       <DatePicker
         value={moment(value)}
-        format="DD.MM.YYYY"
+        format="DD.MM.YYYY HH:mm"
         allowClear={false}
+        showTime
         onChange={(newValue: Moment | null) => onChange(+moment(newValue))}
       />
     );
@@ -47,6 +48,21 @@ export const CustomInput = ({ value, id, onChange = () => {} }: CustomInputProps
         <Select.Option value="outdated">Outdated</Select.Option>
       </Select>
     );
+    case 'status':
+      return (
+        <Radio.Group
+          options={[
+            { label: 'Planned', value: 'planned' },
+            { label: 'Active', value: 'active' },
+            { label: 'Finished', value: 'finished' },
+          ]}
+          optionType="button"
+          buttonStyle="solid"
+          onChange={(event) => onChange(event.target.value)}
+          value={value}
+        />
+      );
+
     default: return <Input value={value} onChange={onChange} />;
   }
 };
@@ -55,9 +71,12 @@ interface IProps {
   title: string,
   task: Task,
   onFinish: (data: Task) => void
+  onTaskRemove?: (data: Task) => void
 }
 
-export default ({ title, onFinish, task }: IProps) => (
+export default ({
+  title, onFinish, task, onTaskRemove,
+}: IProps) => (
   <div className="TaskForm">
     <Title level={2}>{title}</Title>
     <Form
@@ -83,9 +102,21 @@ export default ({ title, onFinish, task }: IProps) => (
           </Form.Item>
         ))}
       <Form.Item {...tailLayout}>
-        <Button type="primary" htmlType="submit">
-          Save
-        </Button>
+        <Space>
+          {onTaskRemove && (
+            <Button
+              type="default"
+              htmlType="button"
+              className="ant-btn-danger"
+              onClick={() => onTaskRemove(task)}
+            >
+              Delete
+            </Button>
+          )}
+          <Button type="primary" htmlType="submit">
+            Save
+          </Button>
+        </Space>
       </Form.Item>
     </Form>
   </div>

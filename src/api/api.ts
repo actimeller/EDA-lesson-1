@@ -4,7 +4,7 @@ import {
   TaskResponse, Task,
 } from './types';
 import {
-  getUser, setUser, getSessionUser, getAllUsersTasks, setTask,
+  getUser, setUser, getSessionUser, getAllUsersTasks, setTask, deleteTask,
 } from './storage';
 import { randomInt } from '../utils';
 
@@ -110,14 +110,16 @@ export const getFilteredTasks = (
   randomDelayResponse(() => {
     if (user) {
       const filteredTasks = getAllUsersTasks(user)
-        .filter((task) => task.title.search(filter.title) > -1)
+        .filter((task) => task.title.search(filter.title ? filter.title : '') > -1)
         .filter((task) => (filter.type ? task.type === filter.type : true))
+        .filter((task) => (filter.status ? task.status === filter.status : true))
         .filter((task) => (
           filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
         ));
       resolve({
         type: 'success',
-        message: filteredTasks,
+        message: 'Tasks have been loaded',
+        data: filteredTasks,
       });
     } else {
       reject(new Error('Error while getting tasks. Try again later'));
@@ -136,7 +138,8 @@ export const getTask = (
         .find((task) => task.id === id);
       resolve({
         type: 'success',
-        message: filteredTask,
+        message: 'Task has been loaded',
+        data: filteredTask,
       });
     } else {
       reject(new Error('Error while getting task. Try again later'));
@@ -147,7 +150,7 @@ export const getTask = (
 export const editTask = (
   sessionId: string,
   data: Task,
-): Promise<BaseResponse> => new Promise((resolve, reject) => {
+): Promise<TaskListResponse> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
   randomDelayResponse(() => {
     if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
@@ -155,6 +158,7 @@ export const editTask = (
       resolve({
         type: 'success',
         message: 'Task has been updated',
+        data: getAllUsersTasks(user),
       });
     } else {
       reject(new Error('Error while saving task. Try again later'));
@@ -165,9 +169,9 @@ export const editTask = (
 export const createTask = (
   sessionId: string,
   data: Task,
-): Promise<BaseResponse> => new Promise((resolve, reject) => {
+): Promise<TaskListResponse> => new Promise((resolve, reject) => {
   const user = getSessionUser(sessionId);
-  randomDelayResponse(() => {
+  randomDelayResponse(async () => {
     if (user) {
       setUser({
         ...user,
@@ -176,10 +180,34 @@ export const createTask = (
       setTask(data);
       resolve({
         type: 'success',
-        message: 'Task has been updated',
+        message: 'Task has been created',
+        data: getAllUsersTasks(getSessionUser(sessionId)!),
       });
     } else {
       reject(new Error('Error while creating task. Try again later'));
+    }
+  });
+});
+
+export const removeTask = (
+  sessionId: string,
+  data: Task,
+): Promise<TaskListResponse> => new Promise((resolve, reject) => {
+  const user = getSessionUser(sessionId);
+  randomDelayResponse(() => {
+    if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
+      setUser({
+        ...user,
+        tasks: user.tasks.filter((id) => id !== data.id),
+      });
+      deleteTask(data);
+      resolve({
+        type: 'success',
+        message: 'Task has been updated',
+        data: getAllUsersTasks(getSessionUser(sessionId)!),
+      });
+    } else {
+      reject(new Error('Error while saving task. Try again later'));
     }
   });
 });

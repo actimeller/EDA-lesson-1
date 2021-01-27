@@ -4,7 +4,7 @@ import { LOCAL_STORAGE_TASKS, LOCAL_STORAGE_USERS } from '../enviroment';
 import { User, Task } from './types';
 
 const initialUsers: Record<string, User> = usersResponse;
-const initialTasks = tasksResponse as Record<string, Task>;
+const initialTasks: Record<string, Task> = tasksResponse as any;
 
 export const getAllUsers = (): Record<string, User> => {
   const localStorageUsers = localStorage.getItem(LOCAL_STORAGE_USERS);
@@ -54,6 +54,14 @@ export const setTask = (task: Task) => {
   setTasks({
     ...tasks,
     [task.id]: { ...task },
+  });
+};
+
+export const deleteTask = (task: Task) => {
+  const tasks = getAllTasks();
+  delete tasks[task.id];
+  setTasks({
+    ...tasks,
   });
 };
 

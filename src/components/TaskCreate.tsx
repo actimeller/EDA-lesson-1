@@ -3,17 +3,20 @@ import {
   Button, Result, Spin, message,
 } from 'antd';
 import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   Task, createTask,
 } from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';
+import { setTodayTasks } from '../store/tasks/actions';
 
 const initialTask: Task = {
   id: '',
   title: '',
   description: '',
   type: 'default',
+  status: 'planned',
   plannedStartDate: new Date().getTime(),
   plannedEndDate: new Date().getTime(),
   startDate: new Date().getTime(),
@@ -21,22 +24,23 @@ const initialTask: Task = {
 };
 
 export default () => {
+  const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const task = initialTask;
 
-  const onFinish = (data: Task) => {
+  const onFinish = async (data: Task) => {
     setLoading(true);
     const randomId = Math.floor(Math.random() * 100).toString();
-    createTask(sessionId, { ...data, id: randomId })
-      .then((response) => {
-        message.success(response.message);
-        setLoading(false);
-      })
-      .catch((error) => {
-        message.error(error.toString());
-        setLoading(false);
-      });
+    try {
+      const response = await createTask(sessionId, { ...data, id: randomId });
+      message.success(response.message);
+      dispatch(setTodayTasks(response.data));
+      setLoading(false);
+    } catch (error) {
+      message.error(error.toString());
+      setLoading(false);
+    }
   };
 
   if (!loading && !task) {
