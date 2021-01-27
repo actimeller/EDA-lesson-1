@@ -1,0 +1,15 @@
+.Header {
+  display: flex;
+  justify-content: space-between;
+  a {
+    color: #fff;
+  }
+  .anticon-user {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    svg {
+      fill: #fff;
+    }
+  }
+}
