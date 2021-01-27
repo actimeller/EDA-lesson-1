@@ -79,6 +79,7 @@ export default () => {
         status,
       });
       message.success(response.message);
+      setTasks(response.data);
       dispatch(setTodayTasks(response.data));
       setLoading(false);
     } catch (error) {
@@ -94,8 +95,7 @@ export default () => {
       const response = await connectionChecker(
         getFilteredTasks(sessionId, filterRef.current), fetchTasks,
       );
-      const filteredTasksResponse = response.data;
-      setTasks(filteredTasksResponse);
+      setTasks(response.data);
       setLoading(false);
     } catch (error) {
       message.error(error.toString());
@@ -180,6 +180,7 @@ export default () => {
                   key={task.id}
                 >
                   <Card
+                    className="TaskListCard"
                     title={task.title}
                     extra={[
                       <Tag key={task.id} color={getStatusColor(task.status)}>
