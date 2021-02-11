@@ -4,10 +4,12 @@ import { ActionTypes } from './actions';
 import { isTodayTask } from '../../utils';
 
 type InitialState = {
+  tasks: Task[],
   todayTasks: Task[]
 };
 
 const initialState:InitialState = {
+  tasks: [],
   todayTasks: [],
 };
 

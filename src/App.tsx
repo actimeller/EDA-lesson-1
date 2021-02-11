@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
   Redirect,
   Route, Switch,
@@ -6,6 +6,7 @@ import {
 import { Layout } from 'antd';
 import './App.scss';
 
+import { useDispatch } from 'react-redux';
 import UserContext from './context/UserContext';
 import Login from './components/Login';
 import Registration from './components/Registration';
@@ -17,9 +18,33 @@ import Wrapper from './components/Wrapper';
 import TaskEdit from './components/TaskEdit';
 import TaskCreate from './components/TaskCreate';
 import TaskTodayWidget from './components/TaskTodayWidget';
+import store from './store';
+
+const sharedWorker = new SharedWorker('/shared.worker.js');
 
 export default () => {
+  const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
+
+  useEffect(() => {
+    store.subscribe(() => {
+      // console.info('lastAction: ', store.getState().lastAction);
+      if (!store.getState().lastAction.workerSyncAction) {
+        sharedWorker.port.postMessage(store.getState());
+      }
+    });
+
+    sharedWorker.port.start();
+    sharedWorker.port.onmessage = (e) => {
+      // console.info('sharedWorker.port.onmessage: ', e.data);
+      dispatch({
+        ...e.data.lastAction,
+        workerSyncAction: true,
+      });
+    };
+    // eslint-disable-next-line no-console
+    sharedWorker.port.onmessageerror = (e) => console.log(e);
+  }, []);
 
   if (sessionId == null) {
     return (
