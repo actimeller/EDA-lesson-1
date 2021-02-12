@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { getFilteredTasks, Task } from '../api';
 import UserContext from '../context/UserContext';
 import { setTodayTasks } from '../store/tasks/actions';
-import { RootState } from '../store';
 import { getStatusColor } from '../utils';
 
 const ITEM_HEIGHT = 30;
@@ -33,7 +32,7 @@ const TaskItem = ({ task }: {task: Task}) => {
 
 export default () => {
   const dispatch = useDispatch();
-  const { todayTasks } = useSelector((state: RootState) => state.tasks);
+  const { todayTasks, tasks } = useSelector((state) => state.tasks);
 
   const { sessionId } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
@@ -42,7 +41,7 @@ export default () => {
     grid.push(`${i < 10 ? '0' : ''}${i}:00`);
   }
 
-  const fetchTasks = async () => {
+  const fetchTodayTasks = async () => {
     setLoading(true);
     const filterTodayTasks = {
       plannedStartDate: +moment().startOf('day'),
@@ -57,9 +56,17 @@ export default () => {
     }
   };
 
+  const updateTodayTasks = () => {
+    dispatch(setTodayTasks(tasks));
+  };
+
   useEffect(() => {
-    fetchTasks();
+    fetchTodayTasks();
   }, []);
+
+  useEffect(() => {
+    updateTodayTasks();
+  }, [tasks]);
 
   return (
     <Spin spinning={loading}>

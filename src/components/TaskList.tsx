@@ -7,27 +7,35 @@ import {
 import { DeleteOutlined, EditOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   editTask,
   getFilteredTasks, removeTask, Task, TaskFilter,
 } from '../api';
 import UserContext from '../context/UserContext';
 import { connectionChecker, debounce, getStatusColor } from '../utils';
-import { setTodayTasks } from '../store/tasks/actions';
+import { setTasks } from '../store/tasks/actions';
 
 const { TabPane } = Tabs;
 
 export default () => {
+  const { tasks } = useSelector((state) => state.tasks);
   const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
+
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<TaskFilter>({
     title: '',
   });
   const filterRef = useRef<TaskFilter>();
   filterRef.current = filter;
+
+  const isFilterEmpty = (filterObject: TaskFilter) => Object.entries(filterObject)
+    .reduce((total, [key, value]) => {
+      if (key === 'title') return total && value === '';
+      return total && value == null;
+    }, true);
 
   const onTitleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => setFilter({
     ...filter,
@@ -64,7 +72,7 @@ export default () => {
     try {
       const response = await removeTask(sessionId, task);
       setTasks(response.data);
-      dispatch(setTodayTasks(response.data));
+      dispatch(setTasks(response.data));
       setLoading(false);
     } catch (error) {
       message.error(error.toString());
@@ -79,8 +87,7 @@ export default () => {
         status,
       });
       message.success(response.message);
-      setTasks(response.data);
-      dispatch(setTodayTasks(response.data));
+      dispatch(setTasks(response.data));
       setLoading(false);
     } catch (error) {
       message.error(error.toString());
@@ -88,28 +95,29 @@ export default () => {
     }
   };
 
-  const fetchTasks = async () => {
+  const fetchFilteredTasks = async () => {
     if (!filterRef.current) return;
+    if (isFilterEmpty(filterRef.current)) setFilteredTasks(tasks);
     setLoading(true);
     try {
       const response = await connectionChecker(
-        getFilteredTasks(sessionId, filterRef.current), fetchTasks,
+        getFilteredTasks(sessionId, filterRef.current), fetchFilteredTasks,
       );
-      setTasks(response.data);
+      setFilteredTasks(response.data);
       setLoading(false);
     } catch (error) {
       message.error(error.toString());
     }
   };
 
-  const debouncedFetchTasks = useCallback(
-    debounce(fetchTasks, 300),
+  const debouncedFetchFilteredTasks = useCallback(
+    debounce(fetchFilteredTasks, 300),
     [],
   );
 
   useEffect(() => {
-    debouncedFetchTasks();
-  }, [filter]);
+    debouncedFetchFilteredTasks();
+  }, [filter, tasks]);
 
   return (
     <Spin spinning={loading}>
@@ -174,7 +182,7 @@ export default () => {
               </Col>
             </Row>
             <Row gutter={[16, 16]}>
-              {tasks.map((task) => (
+              {filteredTasks.map((task) => (
                 <Col
                   span={8}
                   key={task.id}
@@ -207,7 +215,7 @@ export default () => {
                   </Card>
                 </Col>
               ))}
-              {(tasks.length === 0 && !loading) && (
+              {(filteredTasks.length === 0 && !loading) && (
                 <Empty
                   style={{ width: '100%' }}
                   description="Nothing found"

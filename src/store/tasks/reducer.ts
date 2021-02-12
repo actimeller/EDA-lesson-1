@@ -15,6 +15,11 @@ const initialState:InitialState = {
 
 const reducer = (state = initialState, action: ActionTypes): InitialState => {
   switch (action.type) {
+    case types.SET_TASKS:
+      return {
+        ...state,
+        tasks: action.payload,
+      };
     case types.SET_TODAY_TASKS:
       return {
         ...state,
