@@ -18,6 +18,12 @@ import { setTasks } from '../store/tasks/actions';
 
 const { TabPane } = Tabs;
 
+const isFilterEmpty = (filter: TaskFilter) => Object.entries(filter)
+  .reduce((total, [key, value]) => {
+    if (key === 'title') return total && value === '';
+    return total && value == null;
+  }, true);
+
 export default () => {
   const { tasks } = useSelector((state) => state.tasks);
   const dispatch = useDispatch();
@@ -30,12 +36,6 @@ export default () => {
   });
   const filterRef = useRef<TaskFilter>();
   filterRef.current = filter;
-
-  const isFilterEmpty = (filterObject: TaskFilter) => Object.entries(filterObject)
-    .reduce((total, [key, value]) => {
-      if (key === 'title') return total && value === '';
-      return total && value == null;
-    }, true);
 
   const onTitleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => setFilter({
     ...filter,
