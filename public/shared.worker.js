@@ -1,4 +1,3 @@
-const requests = [];
 const allPorts = [];
 
 onconnect = (e) => {

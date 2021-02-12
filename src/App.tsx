@@ -28,7 +28,6 @@ export default () => {
 
   useEffect(() => {
     store.subscribe(() => {
-      // console.info('lastAction: ', store.getState().lastAction);
       if (!store.getState().lastAction.workerSyncAction) {
         sharedWorker.port.postMessage(store.getState());
       }
@@ -36,7 +35,6 @@ export default () => {
 
     sharedWorker.port.start();
     sharedWorker.port.onmessage = (e) => {
-      // console.info('sharedWorker.port.onmessage: ', e.data);
       dispatch({
         ...e.data.lastAction,
         workerSyncAction: true,
