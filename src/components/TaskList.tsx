@@ -73,7 +73,6 @@ export default () => {
       const response = await removeTask(sessionId, task);
       setTasks(response.data);
       dispatch(setTasks(response.data));
-      setLoading(false);
     } catch (error) {
       message.error(error.toString());
     }
@@ -88,7 +87,6 @@ export default () => {
       });
       message.success(response.message);
       dispatch(setTasks(response.data));
-      setLoading(false);
     } catch (error) {
       message.error(error.toString());
       setLoading(false);

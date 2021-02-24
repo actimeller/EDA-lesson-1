@@ -18,28 +18,17 @@ import Wrapper from './components/Wrapper';
 import TaskEdit from './components/TaskEdit';
 import TaskCreate from './components/TaskCreate';
 import TaskTodayWidget from './components/TaskTodayWidget';
-import store from './store';
 
-const sharedWorker = new SharedWorker('/shared.worker.js');
+export const sharedWorker = new SharedWorker('/shared.worker.js');
 
 export default () => {
   const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
 
   useEffect(() => {
-    store.subscribe(() => {
-      if (!store.getState().lastAction.workerSyncAction) {
-        sharedWorker.port.postMessage(store.getState());
-      }
-    });
-
     sharedWorker.port.start();
-    sharedWorker.port.onmessage = (e) => {
-      dispatch({
-        ...e.data.lastAction,
-        workerSyncAction: true,
-      });
-    };
+    sharedWorker.port.onmessage = ({ data }) => dispatch(data);
+
     // eslint-disable-next-line no-console
     sharedWorker.port.onmessageerror = (e) => console.log(e);
   }, []);

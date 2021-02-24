@@ -2,6 +2,8 @@ import usersResponse from './users.json';
 import tasksResponse from './tasks.json';
 import { LOCAL_STORAGE_TASKS, LOCAL_STORAGE_USERS } from '../enviroment';
 import { User, Task } from './types';
+import { sharedWorker } from '../App';
+import { SET_TASKS } from '../store/tasks/types';
 
 const initialUsers: Record<string, User> = usersResponse;
 const initialTasks: Record<string, Task> = tasksResponse as any;
@@ -47,6 +49,10 @@ const getTask = (id: Task['id']): Task | undefined => {
 
 const setTasks = (tasks: Record<string, Task>) => {
   localStorage.setItem(LOCAL_STORAGE_TASKS, JSON.stringify(tasks));
+  sharedWorker.port.postMessage({
+    type: SET_TASKS,
+    payload: Object.values(tasks),
+  });
 };
 
 export const setTask = (task: Task) => {
