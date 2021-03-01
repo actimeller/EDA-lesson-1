@@ -9,7 +9,7 @@ import {
 } from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';
-import { setTodayTasks } from '../store/tasks/actions';
+import { setTasks } from '../store/tasks/actions';
 
 const initialTask: Task = {
   id: '',
@@ -35,7 +35,7 @@ export default () => {
     try {
       const response = await createTask(sessionId, { ...data, id: randomId });
       message.success(response.message);
-      dispatch(setTodayTasks(response.data));
+      dispatch(setTasks(response.data));
       setLoading(false);
     } catch (error) {
       message.error(error.toString());

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
   Redirect,
   Route, Switch,
@@ -6,6 +6,7 @@ import {
 import { Layout } from 'antd';
 import './App.scss';
 
+import { useDispatch } from 'react-redux';
 import UserContext from './context/UserContext';
 import Login from './components/Login';
 import Registration from './components/Registration';
@@ -18,8 +19,19 @@ import TaskEdit from './components/TaskEdit';
 import TaskCreate from './components/TaskCreate';
 import TaskTodayWidget from './components/TaskTodayWidget';
 
+export const sharedWorker = new SharedWorker('/shared.worker.js');
+
 export default () => {
+  const dispatch = useDispatch();
   const { sessionId } = useContext(UserContext);
+
+  useEffect(() => {
+    sharedWorker.port.start();
+    sharedWorker.port.onmessage = ({ data }) => dispatch(data);
+
+    // eslint-disable-next-line no-console
+    sharedWorker.port.onmessageerror = (e) => console.log(e);
+  }, []);
 
   if (sessionId == null) {
     return (

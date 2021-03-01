@@ -88,8 +88,8 @@ export const editUser = (
   sessionId: string,
   newUserData: User,
 ):Promise<{ type: string; message: string}> => new Promise((resolve, reject) => {
-  const user = getSessionUser(sessionId);
   randomDelayResponse(() => {
+    const user = getSessionUser(sessionId);
     if (user) {
       setUser(newUserData);
       resolve({
@@ -106,8 +106,8 @@ export const getFilteredTasks = (
   sessionId: string,
   filter: TaskFilter,
 ): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  const user = getSessionUser(sessionId);
   randomDelayResponse(() => {
+    const user = getSessionUser(sessionId);
     if (user) {
       const filteredTasks = getAllUsersTasks(user)
         .filter((task) => task.title.search(filter.title ? filter.title : '') > -1)
@@ -131,8 +131,8 @@ export const getTask = (
   sessionId: string,
   id: Task['id'],
 ): Promise<TaskResponse> => new Promise((resolve, reject) => {
-  const user = getSessionUser(sessionId);
   randomDelayResponse(() => {
+    const user = getSessionUser(sessionId);
     if (user) {
       const filteredTask = getAllUsersTasks(user)
         .find((task) => task.id === id);
@@ -151,8 +151,8 @@ export const editTask = (
   sessionId: string,
   data: Task,
 ): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  const user = getSessionUser(sessionId);
   randomDelayResponse(() => {
+    const user = getSessionUser(sessionId);
     if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
       setTask(data);
       resolve({
@@ -170,8 +170,8 @@ export const createTask = (
   sessionId: string,
   data: Task,
 ): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  const user = getSessionUser(sessionId);
   randomDelayResponse(async () => {
+    const user = getSessionUser(sessionId);
     if (user) {
       setUser({
         ...user,
@@ -193,8 +193,8 @@ export const removeTask = (
   sessionId: string,
   data: Task,
 ): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  const user = getSessionUser(sessionId);
   randomDelayResponse(() => {
+    const user = getSessionUser(sessionId);
     if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
       setUser({
         ...user,

@@ -9,7 +9,7 @@ import {
 } from '../api';
 import UserContext from '../context/UserContext';
 import TaskForm from './TaskForm';
-import { setTodayTasks } from '../store/tasks/actions';
+import { setTasks } from '../store/tasks/actions';
 
 export default () => {
   const dispatch = useDispatch();
@@ -39,7 +39,7 @@ export default () => {
     try {
       const response = await editTask(sessionId, newData);
       message.success(response.message);
-      dispatch(setTodayTasks(response.data));
+      dispatch(setTasks(response.data));
       setLoading(false);
     } catch (error) {
       message.error(error.toString());
@@ -51,7 +51,7 @@ export default () => {
     setLoading(true);
     try {
       const response = await removeTask(sessionId, data);
-      dispatch(setTodayTasks(response.data));
+      dispatch(setTasks(response.data));
       setLoading(false);
       history.push('/');
     } catch (error) {

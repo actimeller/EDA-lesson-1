@@ -1,24 +1,16 @@
 import React, { useContext } from 'react';
 import {
-  Layout, Menu, Breadcrumb, Dropdown,
+  Layout, Menu, Dropdown,
 } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useHistory, Link } from 'react-router-dom';
 import UserContext from '../context/UserContext';
-
-type ItemRenderProps = {
-  route: any,
-  params: any,
-  routes: any,
-  paths:any
-}
 
 const { Header, Content } = Layout;
 
 export default ({ children }: {children: React.ReactNode}) => {
   const { setSessionId } = useContext(UserContext);
   const history = useHistory();
-  const { location } = history;
 
   const logout = () => {
     setSessionId(null);
