@@ -60,6 +60,25 @@ export default () => {
   return (
     <Layout>
       <Wrapper>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/tasks/12345');
+              console.info(response);
+              if (response.ok) {
+                const max = await response.text();
+                console.info(max);
+              }
+            } catch (error) {
+              console.info(error);
+            }
+            // console.info(res);
+          }}
+        >
+          get
+        </button>
+
         <Switch>
           <Route
             path={['/', '/task']}
