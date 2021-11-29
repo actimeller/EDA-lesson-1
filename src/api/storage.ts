@@ -1,6 +1,8 @@
 import { LOCAL_STORAGE_TASKS, LOCAL_STORAGE_USERS } from '../enviroment';
 import { User, Task } from './types';
 
+let buffer: Record<string, any>[] = [];
+
 export const fetchUser = async (login: User['login']): Promise<User | undefined> => {
   const response = await fetch(`/api/users/${login}`);
   if (!response.ok) {
@@ -19,6 +21,7 @@ export const setUser = async (user: User) => {
     body: JSON.stringify(user),
   });
   if (!response.ok) {
+    buffer.push({ setUser: user });
     const localStorageUsers = localStorage.getItem(LOCAL_STORAGE_USERS);
     localStorage.setItem(LOCAL_STORAGE_USERS, JSON.stringify({
       ...JSON.parse(localStorageUsers || ''),
@@ -64,6 +67,7 @@ export const setTask = async (task: Task) => {
     body: JSON.stringify(task),
   });
   if (!response.ok) {
+    buffer.push({ setTask: task });
     const localStorageTasks = localStorage.getItem(LOCAL_STORAGE_TASKS);
     localStorage.setItem(LOCAL_STORAGE_TASKS, JSON.stringify({
       ...JSON.parse(localStorageTasks || ''),
@@ -77,9 +81,26 @@ export const deleteTask = async (id: String) => {
     method: 'POST',
   });
   if (!response.ok) {
+    buffer.push({ delete: id });
     const localStorageTasks = localStorage.getItem(LOCAL_STORAGE_TASKS);
     localStorage.setItem(LOCAL_STORAGE_TASKS, JSON.stringify({
       ...JSON.parse(localStorageTasks || ''),
     }));
   }
 };
+
+export const storageMethods: Record<string, any> = {
+  setTask,
+  deleteTask,
+  setUser,
+};
+
+setInterval(async () => {
+  Promise.all(
+    buffer.map((bufferRequest) => {
+      const [name, args] = Object.entries(bufferRequest).flat();
+      return storageMethods[name](args);
+    }),
+  );
+  buffer = [];
+}, 3000);
