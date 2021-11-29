@@ -60,73 +60,6 @@ export default () => {
   return (
     <Layout>
       <Wrapper>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              const response = await fetch('/api/users');
-              console.info(response);
-              if (response.ok) {
-                const max = await response.json();
-                console.info(max);
-              }
-            } catch (error) {
-              console.info(error);
-            }
-            // console.info(res);
-          }}
-        >
-          get
-        </button>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              const response = await fetch('/api/users/max');
-              console.info(response);
-              if (response.ok) {
-                const res = await response.json();
-                console.info(res);
-              } else {
-                const res = await response.text();
-                console.info(res);
-              }
-            } catch (error) {
-              console.info(error);
-            }
-            // console.info(res);
-          }}
-        >
-          get user id
-        </button>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              const response = await fetch('/api/usersUpdate', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ new: 'message' }),
-              });
-
-              if (response.ok) {
-                const res = await response.text();
-                console.info(res);
-              } else {
-                const res = await response.text();
-                console.info(res);
-              }
-            } catch (error) {
-              console.info(error);
-            }
-            // console.info(res);
-          }}
-        >
-          update users
-        </button>
-
         <Switch>
           <Route
             path={['/', '/task']}
@@ -147,7 +80,6 @@ export default () => {
               component={TaskCreate}
             />
           </Route>
-
           <Route
             path="/profile"
             exact

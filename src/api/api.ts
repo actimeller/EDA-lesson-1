@@ -4,17 +4,28 @@ import {
   TaskResponse, Task,
 } from './types';
 import {
-  getUser, setUser, getSessionUser, getAllUsersTasks, setTask, deleteTask,
+  fetchUser, setUser, getSessionUser, fetchTask,
+  fetchTaskList, setTask, deleteTask,
 } from './storage';
 import { randomInt } from '../utils';
+import { sharedWorker } from '../App';
+import { SET_TASKS } from '../store/tasks/types';
 
-const randomDelayResponse = (func: Function) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const randomDelayResponse = async (func: Function) => {
   const delay = randomInt(0, DELAY * 1.5);
   setTimeout(func, delay);
 };
 
-const checkCredentials = ({ login, password }: Credentials): boolean => {
-  const user = getUser(login);
+const sharedWorkerSetTasks = (taskList: Task[]) => sharedWorker.port.postMessage({
+  type: SET_TASKS,
+  payload: Object.values(taskList),
+});
+
+const checkCredentials = async (
+  { login, password }: Credentials,
+): Promise<boolean> => {
+  const user = await fetchUser(login);
   if (user && user.password === password) { return true; }
   return false;
 };
@@ -23,191 +34,168 @@ const generateSessionId = (
   login: string,
 ): string => `${login}:${Math.random().toString(36).substr(2, 12)}`;
 
-export const authorization = (
+export const authorization = async (
   credentials: Credentials,
-): Promise<BaseResponse> => new Promise((resolve, reject) => {
+): Promise<BaseResponse> => {
   const { login } = credentials;
-  randomDelayResponse(() => {
-    if (checkCredentials(credentials)) {
-      const sessionId = generateSessionId(login);
-      resolve({
-        type: 'success',
-        message: sessionId,
-      });
-    } else {
-      reject(new Error('Auth failed. Please provide correct credentials'));
-    }
-  });
-});
+  if (await checkCredentials(credentials)) {
+    const sessionId = generateSessionId(login);
+    return {
+      type: 'success',
+      message: sessionId,
+    };
+  }
+  throw new Error('Auth failed. Please provide correct credentials');
+};
 
-export const registration = (
+export const registration = async (
   { login, password }: Credentials,
-): Promise<BaseResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getUser(login);
-    if (!user) {
-      setUser({
-        login,
-        password,
-        keyword: '',
-        name: login,
-        photo: '',
-        tasks: [],
-      });
-      const sessionId = generateSessionId(login);
-      resolve({
-        type: 'success',
-        message: sessionId,
-      });
-    } else {
-      reject(new Error('You cannot be registred with this username'));
-    }
-  });
-});
+): Promise<BaseResponse> => {
+  const user = await fetchUser(login);
+  if (!user) {
+    setUser({
+      login,
+      password,
+      keyword: '',
+      name: login,
+      photo: '',
+      tasks: [],
+    });
+    const sessionId = generateSessionId(login);
+    return {
+      type: 'success',
+      message: sessionId,
+    };
+  }
+  throw new Error('You cannot be registred with this username');
+};
 
-export const restore = (
+export const restore = async (
   { login, keyword }:
   { login: User['login'], keyword: User['keyword'] },
-): Promise<BaseResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getUser(login);
-    if (user?.keyword === keyword) {
-      // todo: send restored password to email
-      const sessionId = generateSessionId(login);
-      resolve({
-        type: 'success',
-        message: sessionId,
-      });
-    } else {
-      reject(new Error('Key passoword is incorrect'));
-    }
-  });
-});
+): Promise<BaseResponse> => {
+  const user = await fetchUser(login);
+  if (user?.keyword === keyword) {
+    // todo: send restored password to email
+    const sessionId = generateSessionId(login);
+    return {
+      type: 'success',
+      message: sessionId,
+    };
+  }
+  throw new Error('Key passoword is incorrect');
+};
 
-export const editUser = (
+export const editUser = async (
   sessionId: string,
   newUserData: User,
-):Promise<{ type: string; message: string}> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getSessionUser(sessionId);
-    if (user) {
-      setUser(newUserData);
-      resolve({
-        type: 'success',
-        message: 'Changes have been saved',
-      });
-    } else {
-      reject(new Error('Error while saving data. Try again later'));
-    }
-  });
-});
+):Promise<{ type: string; message: string}> => {
+  const user = await getSessionUser(sessionId);
+  if (user) {
+    setUser(newUserData);
+    return {
+      type: 'success',
+      message: 'Changes have been saved',
+    };
+  }
+  throw new Error('Error while saving data. Try again later');
+};
 
-export const getFilteredTasks = (
+export const getFilteredTasks = async (
   sessionId: string,
   filter: TaskFilter,
-): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getSessionUser(sessionId);
-    if (user) {
-      const filteredTasks = getAllUsersTasks(user)
-        .filter((task) => task.title.search(filter.title ? filter.title : '') > -1)
-        .filter((task) => (filter.type ? task.type === filter.type : true))
-        .filter((task) => (filter.status ? task.status === filter.status : true))
-        .filter((task) => (
-          filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
-        ));
-      resolve({
-        type: 'success',
-        message: 'Tasks have been loaded',
-        data: filteredTasks,
-      });
-    } else {
-      reject(new Error('Error while getting tasks. Try again later'));
-    }
-  });
-});
+): Promise<TaskListResponse> => {
+  const user = await getSessionUser(sessionId);
+  if (user) {
+    const filteredTasks = (await fetchTaskList(user.tasks))
+      .filter((task) => task.title.search(filter.title ? filter.title : '') > -1)
+      .filter((task) => (filter.type ? task.type === filter.type : true))
+      .filter((task) => (filter.status ? task.status === filter.status : true))
+      .filter((task) => (
+        filter.plannedStartDate ? task.plannedStartDate >= filter.plannedStartDate : true
+      ));
+    return {
+      type: 'success',
+      message: 'Tasks have been loaded',
+      data: filteredTasks,
+    };
+  }
+  throw new Error('Error while getting tasks. Try again later');
+};
 
-export const getTask = (
+export const getTask = async (
   sessionId: string,
   id: Task['id'],
-): Promise<TaskResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getSessionUser(sessionId);
-    if (user) {
-      const filteredTask = getAllUsersTasks(user)
-        .find((task) => task.id === id);
-      resolve({
-        type: 'success',
-        message: 'Task has been loaded',
-        data: filteredTask,
-      });
-    } else {
-      reject(new Error('Error while getting task. Try again later'));
-    }
-  });
-});
+): Promise<TaskResponse> => {
+  const user = await getSessionUser(sessionId);
+  if (user) {
+    const filteredTask = await fetchTask(id);
+    return {
+      type: 'success',
+      message: 'Task has been loaded',
+      data: filteredTask,
+    };
+  }
+  throw new Error('Error while getting task. Try again later');
+};
 
-export const editTask = (
+export const editTask = async (
   sessionId: string,
   data: Task,
-): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getSessionUser(sessionId);
-    if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
-      setTask(data);
-      resolve({
-        type: 'success',
-        message: 'Task has been updated',
-        data: getAllUsersTasks(user),
-      });
-    } else {
-      reject(new Error('Error while saving task. Try again later'));
-    }
-  });
-});
+): Promise<TaskListResponse> => {
+  const user = await getSessionUser(sessionId);
+  if (user && user.tasks.includes(data.id)) {
+    await setTask(data);
+    const taskList = await fetchTaskList(user.tasks);
+    sharedWorkerSetTasks(taskList);
+    return {
+      type: 'success',
+      message: 'Task has been updated',
+      data: taskList,
+    };
+  }
+  throw new Error('Error while saving task. Try again later');
+};
 
-export const createTask = (
+export const createTask = async (
   sessionId: string,
   data: Task,
-): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(async () => {
-    const user = getSessionUser(sessionId);
-    if (user) {
+): Promise<TaskListResponse> => {
+  const user = await getSessionUser(sessionId);
+  if (user) {
+    Promise.all([
       setUser({
         ...user,
         tasks: user.tasks.concat(data.id),
-      });
-      setTask(data);
-      resolve({
-        type: 'success',
-        message: 'Task has been created',
-        data: getAllUsersTasks(getSessionUser(sessionId)!),
-      });
-    } else {
-      reject(new Error('Error while creating task. Try again later'));
-    }
-  });
-});
+      }),
+      setTask(data),
+    ]);
 
-export const removeTask = (
+    const taskList = await fetchTaskList(user.tasks);
+    sharedWorkerSetTasks(taskList);
+    return {
+      type: 'success',
+      message: 'Task has been created',
+      data: taskList,
+    };
+  }
+  throw new Error('Error while creating task. Try again later');
+};
+
+export const removeTask = async (
   sessionId: string,
   data: Task,
-): Promise<TaskListResponse> => new Promise((resolve, reject) => {
-  randomDelayResponse(() => {
-    const user = getSessionUser(sessionId);
-    if (user && getAllUsersTasks(user).find((task) => task.id === data.id)) {
-      setUser({
-        ...user,
-        tasks: user.tasks.filter((id) => id !== data.id),
-      });
-      deleteTask(data);
-      resolve({
-        type: 'success',
-        message: 'Task has been updated',
-        data: getAllUsersTasks(getSessionUser(sessionId)!),
-      });
-    } else {
-      reject(new Error('Error while saving task. Try again later'));
-    }
-  });
-});
+): Promise<TaskListResponse> => {
+  const user = await getSessionUser(sessionId);
+  if (user && user.tasks.includes(data.id)) {
+    deleteTask(data.id);
+    const taskList = await fetchTaskList(user.tasks);
+    sharedWorkerSetTasks(taskList);
+    return {
+      type: 'success',
+      message: 'Task has been updated',
+      data: taskList,
+    };
+  }
+  throw new Error('Error while saving task. Try again later');
+};
