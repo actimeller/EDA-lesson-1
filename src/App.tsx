@@ -80,7 +80,6 @@ export default () => {
               component={TaskCreate}
             />
           </Route>
-
           <Route
             path="/profile"
             exact
