@@ -106,6 +106,7 @@ export const getFilteredTasks = async (
   filter: TaskFilter,
 ): Promise<TaskListResponse> => {
   const user = await getSessionUser(sessionId);
+  
   if (user) {
     const filteredTasks = (await fetchTaskList(user.tasks))
       .filter((task) => task.title.search(filter.title ? filter.title : '') > -1)

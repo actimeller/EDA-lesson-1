@@ -3,10 +3,11 @@ import {
   Redirect,
   Route, Switch,
 } from 'react-router-dom';
-import { Layout } from 'antd';
+import { Layout, message } from 'antd';
 import './App.scss';
 
 import { useDispatch } from 'react-redux';
+import { async } from 'rxjs';
 import UserContext from './context/UserContext';
 import Login from './components/Login';
 import Registration from './components/Registration';
@@ -18,6 +19,9 @@ import Wrapper from './components/Wrapper';
 import TaskEdit from './components/TaskEdit';
 import TaskCreate from './components/TaskCreate';
 import TaskTodayWidget from './components/TaskTodayWidget';
+import { getFilteredTasks } from './api';
+import { setTodayTasks } from './store/tasks/actions';
+import { SESSION_TASKS_SNAPSHOT } from './enviroment';
 
 export const sharedWorker = new SharedWorker('/shared.worker.js');
 
@@ -32,6 +36,22 @@ export default () => {
     // eslint-disable-next-line no-console
     sharedWorker.port.onmessageerror = (e) => console.log(e);
   }, []);
+
+  useEffect(() => {
+    const sessionTasksSnapshot = sessionStorage.getItem(SESSION_TASKS_SNAPSHOT);
+    const fetchTasks = async () => {
+      try {
+        const response = await getFilteredTasks(sessionId, {});
+        sessionStorage.setItem(SESSION_TASKS_SNAPSHOT, JSON.stringify(response.data));
+      } catch (error) {
+        message.error(error.toString());
+      }
+    };
+    if (sessionId && !sessionTasksSnapshot) {
+      fetchTasks();
+    }
+    if (!sessionId) sessionStorage.removeItem(SESSION_TASKS_SNAPSHOT);
+  }, [sessionId != null]);
 
   if (sessionId == null) {
     return (

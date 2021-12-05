@@ -66,17 +66,14 @@ app.get('/api/tasks/:ids', (req, res) => {
 app.post('/api/taskUpdate/:id', (req, res) => {
   const tasks = JSON.parse(getTasksJSON());
   const task = tasks[req.params.id];
-  if (task) {
-    fs.writeFileSync(TASKS_STORAGE, JSON.stringify({
-      ...tasks,
-      [req.params.id]: {
-        ...task,
-        ...req.body,
-      },
-    }));
-    return res.status(200).send(`task ${req.params.id} updated`);
-  }
-  return res.status(404).send(`task ${req.params.id} not found`);
+  fs.writeFileSync(TASKS_STORAGE, JSON.stringify({
+    ...tasks,
+    [req.params.id]: {
+      ...task,
+      ...req.body,
+    },
+  }));
+  return res.status(200).send(`task ${req.params.id} updated`);
 });
 
 app.post('/api/taskDelete/:id', (req, res) => {
