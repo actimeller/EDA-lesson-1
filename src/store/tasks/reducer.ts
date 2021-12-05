@@ -25,6 +25,12 @@ const reducer = (state = initialState, action: ActionTypes): InitialState => {
         ...state,
         todayTasks: action.payload.filter((task) => isTodayTask(task)),
       };
+    case types.UPDATE_TASKS:
+      return {
+        ...state,
+        tasks: [...state.tasks],
+      };
+
     default:
       return state;
   }

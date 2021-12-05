@@ -2,7 +2,7 @@ import React, {
   useContext, useState, useEffect, useCallback, useRef,
 } from 'react';
 import {
-  message, Spin, Card, Col, Row, Input, Select, Empty, Tabs, Button, Dropdown, Menu, Tag,
+  message, Spin, Card, Col, Row, Input, Select, Empty, Tabs, Button, Dropdown, Menu, Tag, Popconfirm,
 } from 'antd';
 import { DeleteOutlined, EditOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,8 @@ import {
 } from '../api';
 import UserContext from '../context/UserContext';
 import { connectionChecker, debounce, getStatusColor } from '../utils';
-import { setTasks } from '../store/tasks/actions';
+import { asyncSetTasks, setTasks } from '../store/tasks/actions';
+import { SESSION_TASKS_SNAPSHOT } from '../enviroment';
 
 const { TabPane } = Tabs;
 
@@ -76,6 +77,21 @@ export default () => {
     } catch (error) {
       message.error(error.toString());
     }
+  };
+
+  const onRestore = () => {
+    const sessionTasksSnapshot = sessionStorage.getItem(SESSION_TASKS_SNAPSHOT);
+    if (sessionTasksSnapshot) {
+      const snapshotTasks: Task[] = JSON.parse(sessionTasksSnapshot);
+
+      dispatch(asyncSetTasks({
+        snapshotTasks,
+        sessionId,
+      }));
+    } else {
+      message.error('no data in session storage');
+    }
+    // dispatch(asyncSetTasks(tasks));
   };
 
   const onTaskStatusChange = async (task: Task, status: Task['status']) => {
@@ -164,7 +180,7 @@ export default () => {
           </Col>
           <Col span={20}>
             <Row gutter={[16, 16]}>
-              <Col span={22}>
+              <Col span={20}>
                 <Tabs
                   defaultActiveKey=""
                   onChange={onDateFilterChange}
@@ -178,6 +194,18 @@ export default () => {
                   <Button type="primary">Create task</Button>
                 </Link>
               </Col>
+              <Col span={2}>
+                <Popconfirm
+                  placement="top"
+                  title="Are you sure want to restore all tasks?"
+                  onConfirm={onRestore}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button type="default">Restore tasks</Button>
+                </Popconfirm>
+              </Col>
+
             </Row>
             <Row gutter={[16, 16]}>
               {filteredTasks.map((task) => (
